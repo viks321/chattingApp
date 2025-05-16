@@ -1,7 +1,6 @@
 package com.example.onetoone
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -33,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +48,7 @@ import com.example.onetoone.ui.theme.Cardbacground
 import com.example.onetoone.ui.theme.DarkBackgroun
 import com.example.onetoone.ui.theme.Hintgray
 import com.example.onetoone.ui.theme.Yellow
+import java.lang.Error
 
 class FirstActivity : ComponentActivity() {
 
@@ -63,11 +64,6 @@ class FirstActivity : ComponentActivity() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun PreviewApp(){
-
-    var state = remember { mutableStateOf("") }
-    var isError by remember {
-        mutableStateOf(false)
-    }
 
     Box(
         Modifier
@@ -107,54 +103,7 @@ private fun PreviewApp(){
                     ) {
                     Text(text = "Create Account", fontSize = 25.sp, color = Hintgray, fontWeight = FontWeight.Thin)
                     Text(text = "Login", fontSize = 20.sp, color = Hintgray, fontWeight = FontWeight.Bold)
-                    //textFieldEmail("Email","example@gmail.com",state,isError)
-
-                    OutlinedTextField(
-                        value = state.value,
-                        onValueChange ={
-                            state.value = it
-                            isError = it.isBlank()
-                        },
-                        label = { Text(text = "Email") },
-                        placeholder = { Text(text = "example@gmail.com")},
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Done
-                        ),
-                        leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        isError = isError,
-                        colors = OutlinedTextFieldDefaults.colors(focusedLeadingIconColor = Yellow, focusedBorderColor = Yellow, focusedTextColor = Yellow, focusedLabelColor = Yellow, cursorColor = Yellow, unfocusedTextColor = Hintgray, unfocusedBorderColor = Hintgray, unfocusedLabelColor = Hintgray)
-                    )
-
-                    //textFeldPassword("Password","password",state,isError)
-                    Text(text = "FORGOT PASSWORD", Modifier.fillMaxWidth(), color = Yellow, textAlign = TextAlign.End, fontSize = 12.sp)
-                    //loginButtonView(state,isError)
-
-                    Button(
-                        onClick = {
-                            isError = state.value.isBlank()
-
-                            if (!isError)
-                            {
-
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .size(50.dp),
-                        enabled = true,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Yellow)
-                    ) {
-                        Text(text = "Login")
-                    }
-
-                    if(isError)
-                    {
-                        Text(text = "All fields are requids",Modifier.fillMaxWidth(), color = Yellow, textAlign = TextAlign.Center, fontSize = 12.sp)
-                    }
+                    loginFormButtonView()
 
                 }
             }
@@ -163,22 +112,25 @@ private fun PreviewApp(){
 }
 
 @Composable
-fun textFieldEmail(
-    hint: String,
-    placeholderData: String,
-    state: MutableState<String>,
-    isError: Boolean,
-    )
-{
+fun loginFormButtonView(){
 
+    var stateEmail = remember { mutableStateOf("") }
+    var statePassword = remember { mutableStateOf("") }
+
+    var isErrorEmail = remember { mutableStateOf(false) }
+    var isErrorPassword = remember { mutableStateOf(false) }
+
+    var errorMessage = remember { mutableStateOf("") }
+
+    //Email Textfield
     OutlinedTextField(
-        value = state.value,
+        value = stateEmail.value,
         onValueChange ={
-            state.value = it
-            //isError = it.isBlank()
-                       },
-        label = { Text(text = hint) },
-        placeholder = { Text(text = placeholderData)},
+            stateEmail.value = it
+            isErrorEmail.value = it.isBlank()
+        },
+        label = { Text(text = "Email") },
+        placeholder = { Text(text = "example@gmail.com")},
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Done
@@ -186,32 +138,24 @@ fun textFieldEmail(
         leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
-        isError = isError,
+        isError = isErrorEmail.value,
         colors = OutlinedTextFieldDefaults.colors(focusedLeadingIconColor = Yellow, focusedBorderColor = Yellow, focusedTextColor = Yellow, focusedLabelColor = Yellow, cursorColor = Yellow, unfocusedTextColor = Hintgray, unfocusedBorderColor = Hintgray, unfocusedLabelColor = Hintgray)
-        )
-}
+    )
 
-@Composable
-fun textFeldPassword(
-    hint: String,
-    placeholderData: String,
-    state: MutableState<String>,
-    isError: Boolean,
-){
-
+    //Password Textfield
     var passwordVisible by remember {
         mutableStateOf(false)
     }
 
     OutlinedTextField(
-        value = state.value,
+        value = statePassword.value,
         onValueChange ={
-            state.value = it
-            //isError = it.isBlank()
-                       },
-        label = { Text(text = hint) },
-        placeholder = { Text(text = placeholderData)},
-        isError = isError,
+            statePassword.value = it
+            isErrorPassword.value = it.isBlank()
+        },
+        label = { Text(text = "Password") },
+        placeholder = { Text(text = "Password")},
+        isError = isErrorPassword.value,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done
@@ -222,19 +166,30 @@ fun textFeldPassword(
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         colors = OutlinedTextFieldDefaults.colors(focusedLeadingIconColor = Yellow, focusedBorderColor = Yellow, focusedTextColor = Yellow, focusedLabelColor = Yellow, cursorColor = Yellow, unfocusedTextColor = Hintgray, unfocusedBorderColor = Hintgray, unfocusedLabelColor = Hintgray)
     )
-}
 
-@Composable
-fun loginButtonView(state: MutableState<String>, isError: Boolean,) {
+    Text(text = "FORGOT PASSWORD", Modifier.fillMaxWidth(), color = Yellow, textAlign = TextAlign.End, fontSize = 12.sp)
+
     Button(
         onClick = {
-            //isError = state.value.isBlank()
-
-            if (!isError)
+            isErrorEmail.value = stateEmail.value.isBlank()
+            isErrorPassword.value = statePassword.value.isBlank()
+            if(isErrorEmail.value && isErrorPassword.value)
             {
-
+                errorMessage.value = "Please fill all data"
             }
-                  },
+            else if(isErrorEmail.value)
+            {
+                errorMessage.value = "Enter email"
+            }
+            else if(isErrorPassword.value)
+            {
+                errorMessage.value = "Enter password"
+            }
+            else
+            {
+                errorMessage.value = "Done"
+            }
+        },
         modifier = Modifier
             .fillMaxWidth()
             .size(50.dp),
@@ -244,4 +199,19 @@ fun loginButtonView(state: MutableState<String>, isError: Boolean,) {
     ) {
         Text(text = "Login")
     }
+
+    errorTextview(errorMessage = errorMessage.value)
+
+}
+
+@Composable
+fun errorTextview(errorMessage: String){
+    
+    Text(
+        text = errorMessage,
+        Modifier.fillMaxWidth(),
+        color = Color.Red,
+        textAlign = TextAlign.Center,
+        fontSize = 12.sp
+    )
 }
