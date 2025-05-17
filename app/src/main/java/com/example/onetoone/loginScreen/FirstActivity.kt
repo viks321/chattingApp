@@ -1,4 +1,4 @@
-package com.example.onetoone
+package com.example.onetoone.loginScreen
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -23,9 +23,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,11 +44,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.onetoone.LoginModel
+import com.example.onetoone.R
+import com.example.onetoone.registrationScreen
 import com.example.onetoone.ui.theme.Cardbacground
 import com.example.onetoone.ui.theme.DarkBackgroun
 import com.example.onetoone.ui.theme.Hintgray
+import com.example.onetoone.ui.theme.OneToOneTheme
 import com.example.onetoone.ui.theme.Yellow
-import java.lang.Error
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class FirstActivity : ComponentActivity() {
 
@@ -56,15 +71,42 @@ class FirstActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PreviewApp()
+            OneToOneTheme {
+                // Your Compose UI starts here
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    App()
+                }
+            }
         }
     }
 }
 
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun PreviewApp(){
+fun App(){
+    val loginViewmodel = LoginViewmodel()
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "loginScreen") {
 
+        composable(route = "loginScreen") {
+
+            loginScreen(loginViewmodel, onClick = { loginData ->
+                navController.currentBackStackEntry?.savedStateHandle?.set("loginData", loginData)
+                navController.navigate("registrationScreen")
+            })
+        }
+
+        composable(route = "registrationScreen"){
+           // val loginData = it.arguments!!.getParcelable<LoginModel>("loginData")
+            val loginData = navController.previousBackStackEntry?.savedStateHandle?.get<LoginModel>("loginData")
+            registrationScreen(navController,loginData)
+        }
+    }
+}
+
+@Composable
+private fun loginScreen(loginViewmodel: LoginViewmodel,onClick: (LoginModel)-> Unit){
     Box(
         Modifier
             .background(color = DarkBackgroun)
@@ -103,7 +145,7 @@ private fun PreviewApp(){
                     ) {
                     Text(text = "Create Account", fontSize = 25.sp, color = Hintgray, fontWeight = FontWeight.Thin)
                     Text(text = "Login", fontSize = 20.sp, color = Hintgray, fontWeight = FontWeight.Bold)
-                    loginFormButtonView()
+                    loginFormButtonView(loginViewmodel,onClick)
 
                 }
             }
@@ -112,7 +154,7 @@ private fun PreviewApp(){
 }
 
 @Composable
-fun loginFormButtonView(){
+fun loginFormButtonView(loginViewmodel: LoginViewmodel,onClick: (LoginModel) -> Unit){
 
     var stateEmail = remember { mutableStateOf("") }
     var statePassword = remember { mutableStateOf("") }
@@ -187,7 +229,9 @@ fun loginFormButtonView(){
             }
             else
             {
-                errorMessage.value = "Done"
+                    loginViewmodel.loginData(stateEmail.value,statePassword.value)
+                    errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
+                onClick(LoginModel(loginViewmodel.loginCradential.value!!.email,loginViewmodel.loginCradential.value!!.password))
             }
         },
         modifier = Modifier
