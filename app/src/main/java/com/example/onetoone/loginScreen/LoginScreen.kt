@@ -37,15 +37,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
 import com.example.onetoone.models.LoginModel
+import com.example.onetoone.registrationScreen.registrationScreen
 import com.example.onetoone.ui.theme.Cardbacground
 import com.example.onetoone.ui.theme.DarkBackgroun
 import com.example.onetoone.ui.theme.Hintgray
 import com.example.onetoone.ui.theme.Yellow
 
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun screenPreview(){
+    loginScreen(loginViewmodel = LoginViewmodel(),onClick = { model -> })
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

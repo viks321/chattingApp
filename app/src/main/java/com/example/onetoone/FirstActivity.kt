@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.loginScreen.LoginViewmodel
 import com.example.onetoone.loginScreen.loginScreen
+import com.example.onetoone.registrationScreen.RegistrationViewmodel
 import com.example.onetoone.registrationScreen.registrationScreen
 import com.example.onetoone.ui.theme.OneToOneTheme
 
@@ -39,6 +40,7 @@ class FirstActivity : ComponentActivity() {
 @Composable
 fun App(){
     val loginViewmodel = LoginViewmodel()
+    val registrationViewmodel = RegistrationViewmodel()
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "loginScreen") {
 
@@ -53,7 +55,7 @@ fun App(){
         composable(route = "registrationScreen"){
            // val loginData = it.arguments!!.getParcelable<LoginModel>("loginData")
             val loginData = navController.previousBackStackEntry?.savedStateHandle?.get<LoginModel>("loginData")
-            registrationScreen(navController,loginData)
+            registrationScreen(navController,loginData,registrationViewmodel)
         }
     }
 }
