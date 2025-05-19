@@ -15,12 +15,10 @@
         <activity
             android:name=".SecondActivity"
             android:exported="false"
-            android:label="@string/title_activity_second"
             android:theme="@style/Theme.OneToOne" />
         <activity
-            android:name=".loginScreen.FirstActivity"
+            android:name=".FirstActivity"
             android:exported="true"
-            android:label="@string/title_activity_first"
             android:theme="@style/Theme.OneToOne">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

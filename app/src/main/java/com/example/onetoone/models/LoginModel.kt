@@ -1,4 +1,4 @@
-package com.example.onetoone
+package com.example.onetoone.models
 
 import android.os.Parcelable
 

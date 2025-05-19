@@ -1,9 +1,5 @@
 package com.example.onetoone.loginScreen
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,10 +16,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,72 +37,20 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.onetoone.LoginModel
 import com.example.onetoone.R
-import com.example.onetoone.registrationScreen
+import com.example.onetoone.models.LoginModel
 import com.example.onetoone.ui.theme.Cardbacground
 import com.example.onetoone.ui.theme.DarkBackgroun
 import com.example.onetoone.ui.theme.Hintgray
-import com.example.onetoone.ui.theme.OneToOneTheme
 import com.example.onetoone.ui.theme.Yellow
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-
-class FirstActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            OneToOneTheme {
-                // Your Compose UI starts here
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    App()
-                }
-            }
-        }
-    }
-}
 
 
-@Preview(showBackground = true, showSystemUi = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App(){
-    val loginViewmodel = LoginViewmodel()
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "loginScreen") {
+fun loginScreen(loginViewmodel: LoginViewmodel, onClick: (LoginModel)-> Unit){
 
-        composable(route = "loginScreen") {
-
-            loginScreen(loginViewmodel, onClick = { loginData ->
-                navController.currentBackStackEntry?.savedStateHandle?.set("loginData", loginData)
-                navController.navigate("registrationScreen")
-            })
-        }
-
-        composable(route = "registrationScreen"){
-           // val loginData = it.arguments!!.getParcelable<LoginModel>("loginData")
-            val loginData = navController.previousBackStackEntry?.savedStateHandle?.get<LoginModel>("loginData")
-            registrationScreen(navController,loginData)
-        }
-    }
-}
-
-@Composable
-private fun loginScreen(loginViewmodel: LoginViewmodel,onClick: (LoginModel)-> Unit){
     Box(
         Modifier
             .background(color = DarkBackgroun)
@@ -142,7 +86,7 @@ private fun loginScreen(loginViewmodel: LoginViewmodel,onClick: (LoginModel)-> U
                         .padding(20.dp),
                     verticalArrangement = Arrangement.SpaceEvenly,
                     horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                ) {
                     Text(text = "Create Account", fontSize = 25.sp, color = Hintgray, fontWeight = FontWeight.Thin)
                     Text(text = "Login", fontSize = 20.sp, color = Hintgray, fontWeight = FontWeight.Bold)
                     loginFormButtonView(loginViewmodel,onClick)
@@ -151,10 +95,11 @@ private fun loginScreen(loginViewmodel: LoginViewmodel,onClick: (LoginModel)-> U
             }
         }
     }
+
 }
 
 @Composable
-fun loginFormButtonView(loginViewmodel: LoginViewmodel,onClick: (LoginModel) -> Unit){
+fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) -> Unit){
 
     var stateEmail = remember { mutableStateOf("") }
     var statePassword = remember { mutableStateOf("") }
@@ -172,7 +117,7 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel,onClick: (LoginModel) -> 
             isErrorEmail.value = it.isBlank()
         },
         label = { Text(text = "Email") },
-        placeholder = { Text(text = "example@gmail.com")},
+        placeholder = { Text(text = "example@gmail.com") },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Done
@@ -196,13 +141,13 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel,onClick: (LoginModel) -> 
             isErrorPassword.value = it.isBlank()
         },
         label = { Text(text = "Password") },
-        placeholder = { Text(text = "Password")},
+        placeholder = { Text(text = "Password") },
         isError = isErrorPassword.value,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done
         ),
-        leadingIcon = { Icon(painter = painterResource(id = R.drawable.baseline_password_24), contentDescription = null)},
+        leadingIcon = { Icon(painter = painterResource(id = R.drawable.baseline_password_24), contentDescription = null) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -229,8 +174,8 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel,onClick: (LoginModel) -> 
             }
             else
             {
-                    loginViewmodel.loginData(stateEmail.value,statePassword.value)
-                    errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
+                loginViewmodel.loginData(stateEmail.value,statePassword.value)
+                errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
                 onClick(LoginModel(loginViewmodel.loginCradential.value!!.email,loginViewmodel.loginCradential.value!!.password))
             }
         },
@@ -250,7 +195,7 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel,onClick: (LoginModel) -> 
 
 @Composable
 fun errorTextview(errorMessage: String){
-    
+
     Text(
         text = errorMessage,
         Modifier.fillMaxWidth(),

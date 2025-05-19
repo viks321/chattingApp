@@ -3,11 +3,7 @@ package com.example.onetoone.loginScreen
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.onetoone.LoginModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.onetoone.models.LoginModel
 
 class LoginViewmodel: ViewModel() {
 
