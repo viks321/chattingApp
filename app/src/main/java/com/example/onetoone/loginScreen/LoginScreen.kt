@@ -1,6 +1,7 @@
 package com.example.onetoone.loginScreen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
 import com.example.onetoone.models.LoginModel
@@ -52,12 +55,14 @@ import com.example.onetoone.ui.theme.Yellow
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun screenPreview(){
-    loginScreen(loginViewmodel = LoginViewmodel(),onClick = { model -> })
+    loginScreen(onClick = { model -> }, rememberNavController())
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun loginScreen(loginViewmodel: LoginViewmodel, onClick: (LoginModel)-> Unit){
+fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
+
+    val loginViewmodel : LoginViewmodel = hiltViewModel()
 
     Box(
         Modifier
@@ -95,9 +100,19 @@ fun loginScreen(loginViewmodel: LoginViewmodel, onClick: (LoginModel)-> Unit){
                     verticalArrangement = Arrangement.SpaceEvenly,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Create Account", fontSize = 25.sp, color = Hintgray, fontWeight = FontWeight.Thin)
+                    Text(
+                        text = "Create Account",
+                        fontSize = 25.sp,
+                        color = Hintgray,
+                        fontWeight = FontWeight.Thin,
+                        modifier = Modifier.clickable {
+                            loginViewmodel.loginData("","")
+                            //errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
+                            onClick(LoginModel("",loginViewmodel.loginCradential.value!!.email,loginViewmodel.loginCradential.value!!.password,""))
+                        }
+                    )
                     Text(text = "Login", fontSize = 20.sp, color = Hintgray, fontWeight = FontWeight.Bold)
-                    loginFormButtonView(loginViewmodel,onClick)
+                    loginFormButtonView(loginViewmodel,onClick,navController)
 
                 }
             }
@@ -107,22 +122,16 @@ fun loginScreen(loginViewmodel: LoginViewmodel, onClick: (LoginModel)-> Unit){
 }
 
 @Composable
-fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) -> Unit){
-
-    var stateEmail = remember { mutableStateOf("") }
-    var statePassword = remember { mutableStateOf("") }
-
-    var isErrorEmail = remember { mutableStateOf(false) }
-    var isErrorPassword = remember { mutableStateOf(false) }
+fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) -> Unit,navController: NavController){
 
     var errorMessage = remember { mutableStateOf("") }
 
     //Email Textfield
     OutlinedTextField(
-        value = stateEmail.value,
+        value = loginViewmodel.stateEmail,
         onValueChange ={
-            stateEmail.value = it
-            isErrorEmail.value = it.isBlank()
+            loginViewmodel.stateEmail = it
+            loginViewmodel.isErrorEmail = it.isBlank()
         },
         label = { Text(text = "Email") },
         placeholder = { Text(text = "example@gmail.com") },
@@ -133,7 +142,7 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) ->
         leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
-        isError = isErrorEmail.value,
+        isError = loginViewmodel.isErrorEmail,
         colors = OutlinedTextFieldDefaults.colors(focusedLeadingIconColor = Yellow, focusedBorderColor = Yellow, focusedTextColor = Yellow, focusedLabelColor = Yellow, cursorColor = Yellow, unfocusedTextColor = Hintgray, unfocusedBorderColor = Hintgray, unfocusedLabelColor = Hintgray)
     )
 
@@ -143,14 +152,14 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) ->
     }
 
     OutlinedTextField(
-        value = statePassword.value,
+        value = loginViewmodel.statePassword,
         onValueChange ={
-            statePassword.value = it
-            isErrorPassword.value = it.isBlank()
+            loginViewmodel.statePassword = it
+            loginViewmodel.isErrorPassword = it.isBlank()
         },
         label = { Text(text = "Password") },
         placeholder = { Text(text = "Password") },
-        isError = isErrorPassword.value,
+        isError = loginViewmodel.isErrorPassword,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done
@@ -166,25 +175,20 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) ->
 
     Button(
         onClick = {
-            isErrorEmail.value = stateEmail.value.isBlank()
-            isErrorPassword.value = statePassword.value.isBlank()
-            if(isErrorEmail.value && isErrorPassword.value)
-            {
-                errorMessage.value = "Please fill all data"
-            }
-            else if(isErrorEmail.value)
-            {
-                errorMessage.value = "Enter email"
-            }
-            else if(isErrorPassword.value)
-            {
-                errorMessage.value = "Enter password"
+            if (!loginViewmodel.isValidation()){
+                errorMessage.value = loginViewmodel.errorMessage.value.toString()
             }
             else
             {
-                loginViewmodel.loginData(stateEmail.value,statePassword.value)
-                errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
-                onClick(LoginModel(loginViewmodel.loginCradential.value!!.email,loginViewmodel.loginCradential.value!!.password))
+                loginViewmodel.loginFirebase()
+                loginViewmodel.loginOnFirebase.observeForever {
+                    if(loginViewmodel.loginOnFirebase.value!!){
+                        navController.navigate("homeScreen")
+                    }
+                }
+                //loginViewmodel.loginData(stateEmail.value,statePassword.value)
+                //errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
+                //onClick(LoginModel(loginViewmodel.loginCradential.value!!.email,loginViewmodel.loginCradential.value!!.password))
             }
         },
         modifier = Modifier
@@ -197,8 +201,10 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) ->
         Text(text = "Login")
     }
 
-    errorTextview(errorMessage = errorMessage.value)
-
+    if (!errorMessage.value.isBlank())
+    {
+        errorTextview(errorMessage = errorMessage.value)
+    }
 }
 
 @Composable

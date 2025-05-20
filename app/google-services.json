@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "771885083913",
+    "project_id": "chatting-application-fd071",
+    "storage_bucket": "chatting-application-fd071.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771885083913:android:ee144a024900faa58777d8",
+        "android_client_info": {
+          "package_name": "com.example.onetoone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7MFgbT92asy_Gx0r4yrn1Kif_j7W5wjs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

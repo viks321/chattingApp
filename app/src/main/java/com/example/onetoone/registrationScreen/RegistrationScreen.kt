@@ -1,5 +1,6 @@
 package com.example.onetoone.registrationScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +43,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
@@ -53,11 +58,15 @@ import com.example.onetoone.ui.theme.Yellow
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun screenPreview(){
-    registrationScreen(rememberNavController(),LoginModel("",""), registrationViewmodel = RegistrationViewmodel())
+    registrationScreen(rememberNavController(),LoginModel("","","",""))
 }
 
 @Composable
-fun registrationScreen(navController: NavController, loginModel: LoginModel?,registrationViewmodel: RegistrationViewmodel){
+fun registrationScreen(navController: NavController, loginModel: LoginModel?){
+
+    val registrationViewmodel : RegistrationViewmodel = hiltViewModel()
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -82,7 +91,6 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?,reg
                 )
             }
             Card(
-                onClick = { /*TODO*/ },
                 modifier = Modifier
                     .weight(7f),
                 colors = CardDefaults.cardColors(containerColor = Cardbacground)
@@ -100,7 +108,7 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?,reg
                         fontSize = 15.sp,
                         modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
                     )
-                    userNameTextfield(registrationViewmodel)
+                    userNameTextfield(registrationViewmodel,navController)
                 }
             }
         }
@@ -117,7 +125,7 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?,reg
 }
 
 @Composable
-fun userNameTextfield(registrationViewmodel: RegistrationViewmodel){
+fun userNameTextfield(registrationViewmodel: RegistrationViewmodel,navController: NavController){
 
     var errorMessage = remember { mutableStateOf("") }
 
@@ -205,6 +213,11 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel){
         )},
         leadingIcon = { Icon(painter = painterResource(id = R.drawable.phone_icon), contentDescription = null)}
     )
+
+    if (!errorMessage.value.isBlank()){
+        errorTextview("*"+errorMessage.value)
+    }
+
     Button(
         onClick = {
             if (!registrationViewmodel.isValidation()){
@@ -212,7 +225,13 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel){
             }
             else
             {
-                errorMessage.value = "Done"
+                registrationViewmodel.registerUserOnFirebase()
+                registrationViewmodel.successfullyLiveData.observeForever {
+                    if (registrationViewmodel.successfullyLiveData.value!!){
+                        navController.navigate("homeScreen")
+                    }
+                }
+
             }
         },
         modifier = Modifier
@@ -225,8 +244,18 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel){
         Text(text = "Create account")
     }
 
+    Text(
+        text = "If you have already account please login",
+        Modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate("loginScreen")
+            },
+        color = Yellow,
+        textAlign = TextAlign.Center,
+        fontSize = 15.sp
+    )
 
-        errorTextview(errorMessage.value)
 }
 
 @Composable

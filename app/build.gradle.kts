@@ -5,6 +5,7 @@ plugins {
     id("kotlin-parcelize")
     alias(libs.plugins.hilt)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.services)   // Google Services
 }
 
 android {
@@ -61,6 +62,7 @@ dependencies {
     //navigation
     /*implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)*/
+
     // Hilt Navigation for Jetpack
     implementation(libs.androidx.hilt.navigation.fragment)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -95,6 +97,19 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.converter.scalars)
+
+    implementation(platform(libs.firebase.bom))
+
+    // Email/Password Auth
+    implementation (libs.firebase.auth)
+
+    // Realtime Database
+    implementation (libs.firebase.database)
+
+    // Optional: For coroutines support
+    implementation (libs.kotlinx.coroutines.play.services)
+
+    implementation(libs.firebase.analytics)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

@@ -6,8 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.onetoone.repositary.Repository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RegistrationViewmodel: ViewModel() {
+@HiltViewModel
+class RegistrationViewmodel @Inject constructor(val repository: Repository): ViewModel() {
 
     var userNameSate by mutableStateOf("")
     var userNameError by mutableStateOf(false)
@@ -25,21 +32,44 @@ class RegistrationViewmodel: ViewModel() {
     val errorValidationMutableLiveData : LiveData<String>
         get() = _errorValidationMutableLiveData
 
+
+    fun registerUserOnFirebase() {
+        viewModelScope.launch(Dispatchers.IO){
+            repository.registerUser(userEmailSate,userPasswordSate)
+        }
+    }
+    val successfullyLiveData : LiveData<Boolean>
+        get() = repository.registationLiveData
+
+
+
     fun isValidation(): Boolean{
-        _errorValidationMutableLiveData.value = if (userNameSate.isBlank()){
-            "Enter full name"
+        if (userNameSate.isBlank() && userEmailSate.isBlank() && userPhoneSate.isBlank() && userPasswordSate.isBlank())
+        {
+            _errorValidationMutableLiveData.value =  "Please fill all details"
+            userNameError = userNameSate.isBlank()
+            userEmailError = userEmailSate.isBlank()
+            userPhoneError = userPhoneSate.isBlank()
+            userPasswordError = userPasswordSate.isBlank()
+        }
+        else if (userNameSate.isBlank()){
+            _errorValidationMutableLiveData.value =  "Enter full name"
+            userNameError = userNameSate.isBlank()
         }
         else if(userEmailSate.isBlank()){
-            "Enter email"
+            _errorValidationMutableLiveData.value =  "Enter email"
+            userEmailError = userEmailSate.isBlank()
         }
         else if(userPhoneSate.isBlank()){
-            "Enter phone number"
+            _errorValidationMutableLiveData.value = "Enter phone number"
+            userPhoneError = userPhoneSate.isBlank()
         }
         else if(userPasswordSate.isBlank()){
-            "Enter password"
+            _errorValidationMutableLiveData.value = "Enter password"
+            userPasswordError = userPasswordSate.isBlank()
         }
         else{
-            null
+            _errorValidationMutableLiveData.value = null
         }
         return _errorValidationMutableLiveData.value == null
     }
