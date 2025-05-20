@@ -10,13 +10,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.repositary.Repository
+import com.example.onetoone.repositary.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewmodel @Inject constructor(val repository: Repository): ViewModel() {
+
+    var isLoading by mutableStateOf(false)
 
     private val _loginCradential = MutableLiveData<LoginModel>()
     val loginCradential: LiveData<LoginModel>
@@ -57,7 +62,7 @@ class LoginViewmodel @Inject constructor(val repository: Repository): ViewModel(
         return errorMessage.value == null
     }
 
-    val loginOnFirebase: LiveData<Boolean>
+    val loginOnFirebase: LiveData<Response<Boolean>>
         get() = repository.loginLiveData
 
     fun loginFirebase(){

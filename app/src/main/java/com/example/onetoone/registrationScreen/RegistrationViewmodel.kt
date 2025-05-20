@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.onetoone.repositary.Repository
+import com.example.onetoone.repositary.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,6 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegistrationViewmodel @Inject constructor(val repository: Repository): ViewModel() {
+
+    var isLoding by mutableStateOf(false)
 
     var userNameSate by mutableStateOf("")
     var userNameError by mutableStateOf(false)
@@ -38,7 +41,7 @@ class RegistrationViewmodel @Inject constructor(val repository: Repository): Vie
             repository.registerUser(userEmailSate,userPasswordSate)
         }
     }
-    val successfullyLiveData : LiveData<Boolean>
+    val regidterOnFirebaseLiveData : LiveData<Response<Boolean>>
         get() = repository.registationLiveData
 
 

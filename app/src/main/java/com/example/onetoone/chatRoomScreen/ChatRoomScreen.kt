@@ -40,6 +40,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
 import com.example.onetoone.ui.theme.Hintgray
+import com.example.onetoone.ui.theme.Yellow
 
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -149,12 +150,14 @@ fun chatRoomScreen(navController: NavController) {
 fun senderView(s: String) {
 
     Box(
-        modifier = Modifier.padding(10.dp).fillMaxWidth()
+        modifier = Modifier.padding(10.dp).fillMaxWidth().padding(50.dp,0.dp,0.dp,0.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = s,
             fontSize = 15.sp,
-            modifier = Modifier.shadow(8.dp).align(alignment = Alignment.CenterEnd)
+            color = Yellow,
+            modifier = Modifier.shadow(8.dp, shape = RoundedCornerShape(10.dp)).align(alignment = Alignment.CenterEnd).padding(25.dp)
         )
     }
 }
@@ -163,13 +166,14 @@ fun senderView(s: String) {
 fun reciverView(s: String) {
 
     Box(
-        modifier = Modifier.padding(10.dp)
+        modifier = Modifier.padding(10.dp).padding(0.dp,0.dp,50.dp,0.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = s,
             fontSize = 15.sp,
-            modifier = Modifier
-                .shadow(8.dp)
+            color = Color.Black,
+            modifier = Modifier.shadow(8.dp, shape = RoundedCornerShape(10.dp)).padding(25.dp)
         )
     }
 }
@@ -177,62 +181,60 @@ fun reciverView(s: String) {
 
 fun getListItems(): ArrayList<String>{
     val arrItems = ArrayList<String>()
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
-    arrItems.add("Vikas")
-    arrItems.add("Rahul")
-    arrItems.add("Mohit")
-    arrItems.add("Mukesh")
-    arrItems.add("Ravinder")
+    arrItems.add("Vikas registration")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Rahul registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mohit registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Mukesh registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
+    arrItems.add("Ravinder registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen Vikas registration Screen")
     return arrItems
 }

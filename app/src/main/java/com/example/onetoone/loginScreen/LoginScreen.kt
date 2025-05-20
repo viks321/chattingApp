@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,11 +43,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
+import com.example.onetoone.lodingScreen.lodingScreen
 import com.example.onetoone.models.LoginModel
-import com.example.onetoone.registrationScreen.registrationScreen
+import com.example.onetoone.repositary.Response
 import com.example.onetoone.ui.theme.Cardbacground
 import com.example.onetoone.ui.theme.DarkBackgroun
 import com.example.onetoone.ui.theme.Hintgray
@@ -67,10 +70,14 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
     Box(
         Modifier
             .background(color = DarkBackgroun)
-            .padding(20.dp)) {
+            .fillMaxSize()
+            ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
         ) {
+            //LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,12 +124,40 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
                 }
             }
         }
+
+        if (loginViewmodel.isLoading) {
+            //Loding Screen
+            lodingScreen()
+        }
+
+        loginViewmodel.loginOnFirebase.observeForever(Observer {
+            when(it){
+
+                is Response.Loading ->{
+                    loginViewmodel.isLoading = true
+                }
+                is Response.Success ->{
+                    if(loginViewmodel.loginOnFirebase.value?.data!!){
+                        loginViewmodel.isLoading = false
+                        navController.navigate("homeScreen")
+                    }
+                }
+                is Response.Error ->{
+                    loginViewmodel.isLoading = false
+                }
+            }
+        })
+
     }
 
 }
 
 @Composable
-fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) -> Unit,navController: NavController){
+fun loginFormButtonView(
+    loginViewmodel: LoginViewmodel,
+    onClick: (LoginModel) -> Unit,
+    navController: NavController,
+){
 
     var errorMessage = remember { mutableStateOf("") }
 
@@ -181,11 +216,6 @@ fun loginFormButtonView(loginViewmodel: LoginViewmodel, onClick: (LoginModel) ->
             else
             {
                 loginViewmodel.loginFirebase()
-                loginViewmodel.loginOnFirebase.observeForever {
-                    if(loginViewmodel.loginOnFirebase.value!!){
-                        navController.navigate("homeScreen")
-                    }
-                }
                 //loginViewmodel.loginData(stateEmail.value,statePassword.value)
                 //errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
                 //onClick(LoginModel(loginViewmodel.loginCradential.value!!.email,loginViewmodel.loginCradential.value!!.password))

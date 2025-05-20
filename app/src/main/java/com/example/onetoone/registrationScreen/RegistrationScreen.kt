@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +39,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -49,7 +52,9 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
+import com.example.onetoone.lodingScreen.lodingScreen
 import com.example.onetoone.models.LoginModel
+import com.example.onetoone.repositary.Response
 import com.example.onetoone.ui.theme.Cardbacground
 import com.example.onetoone.ui.theme.DarkBackgroun
 import com.example.onetoone.ui.theme.Hintgray
@@ -105,7 +110,7 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?){
                     Text(
                         text = "CREATE",
                         color = Hintgray,
-                        fontSize = 15.sp,
+                        fontSize = 20.sp,
                         modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
                     )
                     userNameTextfield(registrationViewmodel,navController)
@@ -120,7 +125,26 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?){
             }
         )*/
 
+        //Loding Screen
+        if (registrationViewmodel.isLoding){
+            lodingScreen()
+        }
 
+        registrationViewmodel.regidterOnFirebaseLiveData.observeForever(Observer {
+            when(it){
+
+                is Response.Loading->{
+                    registrationViewmodel.isLoding = true
+                }
+                is Response.Success->{
+                    registrationViewmodel.isLoding = false
+                    navController.navigate("homeScreen")
+                }
+                is Response.Error->{
+                    registrationViewmodel.isLoding = false
+                }
+            }
+        })
     }
 }
 
@@ -171,6 +195,11 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel,navController
         )},
         leadingIcon = { Icon(painter = painterResource(id = R.drawable.email_icon), contentDescription = null)}
     )
+
+    //Password Textfield
+    var passwordVisible by remember {
+        mutableStateOf(false)
+    }
     OutlinedTextField(
         value = registrationViewmodel.userPasswordSate,
         onValueChange = {
@@ -190,6 +219,7 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel,navController
             text = "Password",
             fontSize = 13.sp
         )},
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         leadingIcon = { Icon(painter = painterResource(id = R.drawable.baseline_password_24), contentDescription = null)}
     )
     OutlinedTextField(
@@ -226,12 +256,6 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel,navController
             else
             {
                 registrationViewmodel.registerUserOnFirebase()
-                registrationViewmodel.successfullyLiveData.observeForever {
-                    if (registrationViewmodel.successfullyLiveData.value!!){
-                        navController.navigate("homeScreen")
-                    }
-                }
-
             }
         },
         modifier = Modifier
