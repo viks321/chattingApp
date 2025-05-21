@@ -72,6 +72,7 @@ fun App() {
 
         //Chat room screen
         composable(route = "chatRoomScreen"){
+            //val userData = navController.previousBackStackEntry?.savedStateHandle?.get<LoginModel>("loginData")
             chatRoomScreen(navController)
         }
     }

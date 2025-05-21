@@ -22,6 +22,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,9 +38,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
+import com.example.onetoone.lodingScreen.lodingScreen
+import com.example.onetoone.models.ChatRoom
+import com.example.onetoone.models.LoginModel
+import com.example.onetoone.models.RoomModel
 import com.example.onetoone.ui.theme.Hintgray
 import com.example.onetoone.ui.theme.Yellow
 
@@ -51,6 +58,14 @@ fun previewScreen(){
 
 @Composable
 fun chatRoomScreen(navController: NavController) {
+
+    val chatRoomViewmodel : ChatRoomViewmodel = hiltViewModel()
+    val roomDataMessages : State<List<ChatRoom>?> = chatRoomViewmodel.roomDataMessages.collectAsState()
+
+    val loginData = navController
+        .previousBackStackEntry
+        ?.savedStateHandle
+        ?.get<LoginModel>("loginData")
 
     Scaffold {
         Box(modifier = Modifier
@@ -103,13 +118,13 @@ fun chatRoomScreen(navController: NavController) {
                     modifier = Modifier.weight(1f)
                 ) {
                     LazyColumn {
-                        items(getListItems()){
+                        items(roomDataMessages.value!!){
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                             )
                             {
-                                senderView(it)
-                                reciverView(it)
+                                senderView(it.message!!)
+                                reciverView(it.message!!)
                             }
                         }
                     }
@@ -136,7 +151,15 @@ fun chatRoomScreen(navController: NavController) {
                         placeholder = { Text(text = "Type here.....", color = Hintgray)},
                         shape = RoundedCornerShape(10.dp),
                         maxLines = 3,
-                        trailingIcon = { Icon(painter = painterResource(id = R.drawable.send_icon), contentDescription = "send", modifier = Modifier.size(30.dp))},
+                        trailingIcon = { Icon(
+                            painter = painterResource(id = R.drawable.send_icon),
+                            contentDescription = "send",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clickable {
+                                    chatRoomViewmodel.createChatRoom(ChatRoom(state.value),loginData?.userID!!)
+                                }
+                        )},
                     )
                 }
             }
@@ -150,14 +173,20 @@ fun chatRoomScreen(navController: NavController) {
 fun senderView(s: String) {
 
     Box(
-        modifier = Modifier.padding(10.dp).fillMaxWidth().padding(50.dp,0.dp,0.dp,0.dp),
+        modifier = Modifier
+            .padding(10.dp)
+            .fillMaxWidth()
+            .padding(50.dp, 0.dp, 0.dp, 0.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = s,
             fontSize = 15.sp,
             color = Yellow,
-            modifier = Modifier.shadow(8.dp, shape = RoundedCornerShape(10.dp)).align(alignment = Alignment.CenterEnd).padding(25.dp)
+            modifier = Modifier
+                .shadow(8.dp, shape = RoundedCornerShape(10.dp))
+                .align(alignment = Alignment.CenterEnd)
+                .padding(25.dp)
         )
     }
 }
@@ -166,14 +195,18 @@ fun senderView(s: String) {
 fun reciverView(s: String) {
 
     Box(
-        modifier = Modifier.padding(10.dp).padding(0.dp,0.dp,50.dp,0.dp),
+        modifier = Modifier
+            .padding(10.dp)
+            .padding(0.dp, 0.dp, 50.dp, 0.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = s,
             fontSize = 15.sp,
             color = Color.Black,
-            modifier = Modifier.shadow(8.dp, shape = RoundedCornerShape(10.dp)).padding(25.dp)
+            modifier = Modifier
+                .shadow(8.dp, shape = RoundedCornerShape(10.dp))
+                .padding(25.dp)
         )
     }
 }

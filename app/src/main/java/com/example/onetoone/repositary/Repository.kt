@@ -6,10 +6,15 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
+import com.example.onetoone.models.ChatRoom
 import com.example.onetoone.models.LoginModel
+import com.example.onetoone.models.RoomModel
 import com.example.onetoone.models.Users
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +58,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             }
     }
 
-    suspend fun registerUser(email: String, password: String) {
+    suspend fun registerUser(userName: String,email: String,password: String,phone: String) {
 
         _registationMutableLiveData.postValue(Response.Loading(null))
         auth.createUserWithEmailAndPassword(email, password)
@@ -63,6 +68,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                     CoroutineScope(Dispatchers.IO).launch {
                         userDataPref.saveUserId(it.result.user?.uid!!)
                         userDataPref.saveIslogin(true)
+                        addMemberOnFirebase(it.result.user?.uid!!,userName, email, password, phone)
                     }
                     Toast.makeText(context, "Registered successfully", Toast.LENGTH_SHORT).show()
                 } else {
@@ -78,7 +84,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
 
     suspend fun addMemberOnFirebase(userID: String,userName: String,email: String,password: String,phone: String){
         val userRef = firebaseDatabase.getReference("allMembers")
-        val loginModel = LoginModel(userName,email,password,phone)
+        val loginModel = LoginModel(userID,userName,email,password,phone)
         userRef.child("allUsers").child(userID).setValue(loginModel)
             .addOnSuccessListener {
             _addMemberOnFirebase.postValue(Response.Success(true))
@@ -110,10 +116,11 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
     val createRoomMutableStateFlow : StateFlow<Boolean>
         get() = _createRoomMutableStateFlow
 
-    suspend fun createChatRoomFirebase(){
+    suspend fun createChatRoomFirebase(receiverID: String, sernderID: String,chatRoom: ChatRoom){
+
         val userRef = firebaseDatabase.getReference("allMembers")
-        val chatroomID = UUID.randomUUID().toString()
-        userRef.child("romms").child(chatroomID).setValue("data")
+        //val receiverMessage = userRef.child("allUsers").child(chatRoom.userID!!).child("romms").child(chatroomID).child("receiverMessage")
+        userRef.child("allUsers").child(sernderID).child("romms").child(receiverID).child("senderMessage").push().setValue(ChatRoom(chatRoom.message))
             .addOnSuccessListener {
                 CoroutineScope(Dispatchers.IO).launch {
                     _createRoomMutableStateFlow.emit(true)
@@ -125,6 +132,59 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                     _createRoomMutableStateFlow.emit(false)
                 }
             }
+
+        /*val messageReceiverMap = mapOf(
+            "message" to ChatRoom(chatRoom.receiverID,chatRoom.message)
+        )*/
+
+        userRef.child("allUsers").child(receiverID).child("romms").child(sernderID).child("receiverMessage").push().setValue(ChatRoom(chatRoom.message))
+            .addOnSuccessListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    _createRoomMutableStateFlow.emit(true)
+                }
+
+            }
+            .addOnFailureListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    _createRoomMutableStateFlow.emit(false)
+                }
+            }
+
+    }
+
+
+    //getMessageData
+
+    //sender
+    private val _roomDataMutableState = MutableStateFlow<List<ChatRoom>?>(emptyList())
+    val roomDataMutableState: StateFlow<List<ChatRoom>?>
+        get() = _roomDataMutableState
+
+    suspend fun getMessagesFromFirebase(userID: String){
+        val userRef = firebaseDatabase.getReference("allMembers").child("allUsers").child("wnY3geG6odMXZTKB5IBq1Uf4sF53").child("romms").child("wnY3geG6odMXZTKB5IBq1Uf4sF53")
+
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val room = snapshot.getValue(RoomModel::class.java)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    _roomDataMutableState.emit(room?.senderMessage)
+                }
+                // Print all sender messages
+                /*room?.senderMessage?.forEach { (key, msg) ->
+                    Log.d("SenderMessage", "$key: ${msg.message}")
+                }*/
+
+                // Print all receiver messages
+                /*room?.receiverMessage?.forEach { (key, msg) ->
+                    Log.d("ReceiverMessage", "$key: ${msg.message}")
+                }*/
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error: ${error.message}")
+            }
+        })
+
     }
 
 }

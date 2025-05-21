@@ -15,6 +15,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,17 +26,11 @@ class RegistrationViewmodel @Inject constructor(val repository: Repository,val u
 
     var isLoding by mutableStateOf(false)
     var isLoadingData by mutableStateOf(false)
-    var userID by mutableStateOf("")
 
     init {
         viewModelScope.launch {
             userDataPref.isLoginFlow.collectLatest {
                 isLoadingData = it!!
-            }
-        }
-        GlobalScope.launch {
-            userDataPref.userIDFlow.collectLatest {
-                userID = it!!
             }
         }
     }
@@ -56,14 +52,14 @@ class RegistrationViewmodel @Inject constructor(val repository: Repository,val u
         get() = _errorValidationMutableLiveData
 
 
+    //registration
     fun registerUserOnFirebase() {
         viewModelScope.launch(Dispatchers.IO){
-            repository.registerUser(userEmailSate,userPasswordSate)
+            repository.registerUser(userNameSate,userEmailSate,userPasswordSate,userPhoneSate)
         }
     }
     val regidterOnFirebaseLiveData : LiveData<Response<Users>>
         get() = repository.registationLiveData
-
 
 
     fun isValidation(): Boolean{
@@ -95,14 +91,5 @@ class RegistrationViewmodel @Inject constructor(val repository: Repository,val u
             _errorValidationMutableLiveData.value = null
         }
         return _errorValidationMutableLiveData.value == null
-    }
-
-    val addMemberLiveData: LiveData<Response<Boolean>>
-        get() = repository.addMemberOnFirebase
-
-    fun addMemberData(){
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.addMemberOnFirebase(userID,userNameSate,userEmailSate,userPasswordSate,userPhoneSate)
-        }
     }
 }

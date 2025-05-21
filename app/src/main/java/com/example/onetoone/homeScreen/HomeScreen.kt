@@ -121,6 +121,11 @@ fun homeScreen(navController: NavController){
 
                                 Card(
                                     onClick = {
+
+                                        val loginData = LoginModel(it.userID, it.email,it.userName,it.password,it.phoneNo)
+                                            navController.currentBackStackEntry
+                                                ?.savedStateHandle
+                                                ?.set("loginData", loginData)
                                         navController.navigate("chatRoomScreen")
                                     },
                                     modifier = Modifier

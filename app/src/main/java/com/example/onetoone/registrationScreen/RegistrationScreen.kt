@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +71,7 @@ fun screenPreview(){
 fun registrationScreen(navController: NavController, loginModel: LoginModel?){
 
     val registrationViewmodel : RegistrationViewmodel = hiltViewModel()
+    //val userID : State<String?> = registrationViewmodel.userID.collectAsState()
 
 
     Box(
@@ -142,24 +144,8 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?){
                 }
                 is Response.Success->{
                     registrationViewmodel.isLoding = false
-                    Toast.makeText(navController.context,registrationViewmodel.userID,Toast.LENGTH_LONG).show()
-                    //navController.navigate("homeScreen")
-                }
-                is Response.Error->{
-                    registrationViewmodel.isLoding = false
-                }
-            }
-        })
-
-        registrationViewmodel.addMemberLiveData.observeForever(Observer {
-            when(it){
-
-                is Response.Loading->{
-                    registrationViewmodel.isLoding = true
-                }
-                is Response.Success->{
-                    registrationViewmodel.isLoding = false
                     navController.navigate("homeScreen")
+                    //registrationViewmodel.addMemberData()
                 }
                 is Response.Error->{
                     registrationViewmodel.isLoding = false
@@ -277,7 +263,6 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel,navController
             else
             {
                 registrationViewmodel.registerUserOnFirebase()
-                registrationViewmodel.addMemberData()
             }
         },
         modifier = Modifier

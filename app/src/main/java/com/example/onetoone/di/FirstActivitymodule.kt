@@ -1,6 +1,7 @@
 package com.example.onetoone.di
 
 import android.content.Context
+import com.example.onetoone.chatRoomScreen.ChatRoomViewmodel
 import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
 import com.example.onetoone.homeScreen.HomeViewmodel
 import com.example.onetoone.loginScreen.LoginViewmodel
@@ -42,6 +43,12 @@ class FirstActivitymodule {
     @Provides
     fun homeViewmodelInstance(repository: Repository): HomeViewmodel{
         return HomeViewmodel(repository)
+    }
+
+    @Singleton
+    @Provides
+    fun chatRoomViewmodel(repository: Repository,userDataPref: UserDataPref): ChatRoomViewmodel{
+        return ChatRoomViewmodel(repository,userDataPref)
     }
 
     @Singleton
