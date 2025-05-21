@@ -129,8 +129,29 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?){
         if (registrationViewmodel.isLoding){
             lodingScreen()
         }
+        if(registrationViewmodel.isLoadingData)
+        {
+            navController.navigate("homeScreen")
+        }
 
         registrationViewmodel.regidterOnFirebaseLiveData.observeForever(Observer {
+            when(it){
+
+                is Response.Loading->{
+                    registrationViewmodel.isLoding = true
+                }
+                is Response.Success->{
+                    registrationViewmodel.isLoding = false
+                    Toast.makeText(navController.context,registrationViewmodel.userID,Toast.LENGTH_LONG).show()
+                    //navController.navigate("homeScreen")
+                }
+                is Response.Error->{
+                    registrationViewmodel.isLoding = false
+                }
+            }
+        })
+
+        registrationViewmodel.addMemberLiveData.observeForever(Observer {
             when(it){
 
                 is Response.Loading->{
@@ -256,6 +277,7 @@ fun userNameTextfield(registrationViewmodel: RegistrationViewmodel,navController
             else
             {
                 registrationViewmodel.registerUserOnFirebase()
+                registrationViewmodel.addMemberData()
             }
         },
         modifier = Modifier

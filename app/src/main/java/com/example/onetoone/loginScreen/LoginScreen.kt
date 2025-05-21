@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
+import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
 import com.example.onetoone.lodingScreen.lodingScreen
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.repositary.Response
@@ -54,6 +56,12 @@ import com.example.onetoone.ui.theme.Cardbacground
 import com.example.onetoone.ui.theme.DarkBackgroun
 import com.example.onetoone.ui.theme.Hintgray
 import com.example.onetoone.ui.theme.Yellow
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -128,6 +136,10 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
         if (loginViewmodel.isLoading) {
             //Loding Screen
             lodingScreen()
+        }
+        if(loginViewmodel.isLoadingData)
+        {
+            navController.navigate("homeScreen")
         }
 
         loginViewmodel.loginOnFirebase.observeForever(Observer {
@@ -215,6 +227,7 @@ fun loginFormButtonView(
             }
             else
             {
+
                 loginViewmodel.loginFirebase()
                 //loginViewmodel.loginData(stateEmail.value,statePassword.value)
                 //errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password

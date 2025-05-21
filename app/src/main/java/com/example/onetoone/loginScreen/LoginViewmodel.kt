@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.repositary.Repository
 import com.example.onetoone.repositary.Response
@@ -15,13 +16,23 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewmodel @Inject constructor(val repository: Repository): ViewModel() {
+class LoginViewmodel @Inject constructor(val repository: Repository,val userDataPref : UserDataPref): ViewModel() {
 
     var isLoading by mutableStateOf(false)
+    var isLoadingData by mutableStateOf(false)
+
+    init {
+        viewModelScope.launch {
+            userDataPref.isLoginFlow.collectLatest {
+                isLoadingData = it!!
+            }
+        }
+    }
 
     private val _loginCradential = MutableLiveData<LoginModel>()
     val loginCradential: LiveData<LoginModel>
@@ -29,7 +40,7 @@ class LoginViewmodel @Inject constructor(val repository: Repository): ViewModel(
 
 
     fun loginData(email: String,password: String) {
-            val loginModel = LoginModel("",email, password,"")
+            val loginModel = LoginModel("","",email, password)
             _loginCradential.value = loginModel
     }
 
@@ -70,4 +81,5 @@ class LoginViewmodel @Inject constructor(val repository: Repository): ViewModel(
             repository.loginUser(stateEmail,statePassword)
         }
     }
+
 }

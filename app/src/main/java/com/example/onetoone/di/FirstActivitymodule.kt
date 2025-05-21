@@ -1,10 +1,13 @@
 package com.example.onetoone.di
 
 import android.content.Context
+import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
+import com.example.onetoone.homeScreen.HomeViewmodel
 import com.example.onetoone.loginScreen.LoginViewmodel
 import com.example.onetoone.registrationScreen.RegistrationViewmodel
 import com.example.onetoone.repositary.Repository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,25 +22,43 @@ class FirstActivitymodule {
 
     @Singleton
     @Provides
-    fun loginViewmdelInstance(repository: Repository): LoginViewmodel{
-        return LoginViewmodel(repository)
+    fun getUserDataPre(@ApplicationContext context: Context) : UserDataPref {
+        return UserDataPref(context)
     }
 
     @Singleton
     @Provides
-    fun registerViewmodelInstance(repository: Repository) : RegistrationViewmodel{
-        return RegistrationViewmodel(repository)
+    fun loginViewmdelInstance(repository: Repository,userDataPref: UserDataPref): LoginViewmodel{
+        return LoginViewmodel(repository,userDataPref)
     }
 
     @Singleton
     @Provides
-    fun getRepositoryInstance(@ApplicationContext context: Context,auth: FirebaseAuth): Repository{
-        return Repository(context, auth)
+    fun registerViewmodelInstance(repository: Repository,userDataPref: UserDataPref) : RegistrationViewmodel{
+        return RegistrationViewmodel(repository,userDataPref)
+    }
+
+    @Singleton
+    @Provides
+    fun homeViewmodelInstance(repository: Repository): HomeViewmodel{
+        return HomeViewmodel(repository)
+    }
+
+    @Singleton
+    @Provides
+    fun getRepositoryInstance(@ApplicationContext context: Context,auth: FirebaseAuth,database: FirebaseDatabase,userDataPref: UserDataPref): Repository{
+        return Repository(context, auth,database,userDataPref)
     }
 
     @Singleton
     @Provides
     fun authFirebaseInstance() : FirebaseAuth{
         return FirebaseAuth.getInstance()
+    }
+
+    @Singleton
+    @Provides
+    fun firebaseDatabaseInstance(): FirebaseDatabase{
+        return FirebaseDatabase.getInstance()
     }
 }

@@ -111,6 +111,11 @@ dependencies {
 
     implementation(libs.firebase.analytics)
 
+    // Preferences DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.0")
+    // Proto DataStore (for structured data)
+    implementation("androidx.datastore:datastore:1.1.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
