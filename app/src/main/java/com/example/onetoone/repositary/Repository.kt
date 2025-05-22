@@ -9,6 +9,7 @@ import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
 import com.example.onetoone.models.ChatRoom
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.RoomModel
+import com.example.onetoone.models.UserData
 import com.example.onetoone.models.Users
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -120,7 +121,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
 
         val userRef = firebaseDatabase.getReference("allMembers")
         //val receiverMessage = userRef.child("allUsers").child(chatRoom.userID!!).child("romms").child(chatroomID).child("receiverMessage")
-        userRef.child("allUsers").child(sernderID).child("romms").child(receiverID).child("senderMessage").push().setValue(ChatRoom(chatRoom.message))
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("senderMessage").push().setValue(ChatRoom(chatRoom.message))
             .addOnSuccessListener {
                 CoroutineScope(Dispatchers.IO).launch {
                     _createRoomMutableStateFlow.emit(true)
@@ -137,7 +138,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             "message" to ChatRoom(chatRoom.receiverID,chatRoom.message)
         )*/
 
-        userRef.child("allUsers").child(receiverID).child("romms").child(sernderID).child("receiverMessage").push().setValue(ChatRoom(chatRoom.message))
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("receiverMessage").push().setValue(ChatRoom(chatRoom.message))
             .addOnSuccessListener {
                 CoroutineScope(Dispatchers.IO).launch {
                     _createRoomMutableStateFlow.emit(true)
@@ -156,32 +157,54 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
     //getMessageData
 
     //sender
-    private val _roomDataMutableState = MutableStateFlow<List<ChatRoom>?>(emptyList())
-    val roomDataMutableState: StateFlow<List<ChatRoom>?>
-        get() = _roomDataMutableState
+    private val _senderMessageMutableState = MutableStateFlow<List<ChatRoom>?>(emptyList())
+    val senderMessageMutableState: StateFlow<List<ChatRoom>?>
+        get() = _senderMessageMutableState
+
+    private val _reciverMessageMutableState = MutableStateFlow<List<RoomModel>?>(emptyList())
+    val reciverMessageMutableState: StateFlow<List<RoomModel>?>
+        get() = _reciverMessageMutableState
 
     suspend fun getMessagesFromFirebase(userID: String){
-        val userRef = firebaseDatabase.getReference("allMembers").child("allUsers").child("wnY3geG6odMXZTKB5IBq1Uf4sF53").child("romms").child("wnY3geG6odMXZTKB5IBq1Uf4sF53")
+        val userRef = firebaseDatabase.getReference("allMembers").child("allUsers")
 
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val room = snapshot.getValue(RoomModel::class.java)
+                var senderMsgList = mutableListOf<ChatRoom>()
+                var receiverMsgList = mutableListOf<RoomModel>()
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    _roomDataMutableState.emit(room?.senderMessage)
+                val userList = snapshot.children.mapNotNull { it.getValue(UserData::class.java) }
+                val rommsMap = userList.get(1).romms
+                if (rommsMap != null) {
+                    for ((chatPartnerID, chatRoom) in rommsMap) {
+                        Log.d("FirebaseChat", "Chat with: $chatPartnerID")
+
+                        receiverMsgList.add(chatRoom)
+
+                        // Receiver messages
+                        chatRoom.receiverMessage?.forEach { (msgId, msg) ->
+                            Log.d("FirebaseChat", "Receiver Message [$msgId]: ${msg.message}")
+                            //receiverMsgList.add(ChatRoom(msg.message))
+                        }
+
+                        // Sender messages
+                        chatRoom.senderMessage?.forEach { (msgId, msg) ->
+                            Log.d("FirebaseChat", "Sender Message [$msgId]: ${msg.message}")
+                            senderMsgList.add(ChatRoom(msg.message))
+                        }
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            _senderMessageMutableState.emit(senderMsgList)
+                            _reciverMessageMutableState.emit(receiverMsgList)
+                        }
+                    }
+                } else {
+                    Log.d("FirebaseChat", "No chat rooms found for this user.")
                 }
-                // Print all sender messages
-                /*room?.senderMessage?.forEach { (key, msg) ->
-                    Log.d("SenderMessage", "$key: ${msg.message}")
-                }*/
-
-                // Print all receiver messages
-                /*room?.receiverMessage?.forEach { (key, msg) ->
-                    Log.d("ReceiverMessage", "$key: ${msg.message}")
-                }*/
             }
+
             override fun onCancelled(error: DatabaseError) {
-                Log.e("Firebase", "Error: ${error.message}")
+                Log.e("Firebase", "Failed to read users", error.toException())
             }
         })
 

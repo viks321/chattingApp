@@ -18,8 +18,8 @@ class ChatRoomViewmodel @Inject constructor(val repository: Repository,val userD
     val createRoomLiveStateFlow : StateFlow<Boolean>
         get() = repository.createRoomMutableStateFlow
 
-    val roomDataMessages : StateFlow<List<ChatRoom>?>
-        get() = repository.roomDataMutableState
+    val roomDataMessages : StateFlow<List<RoomModel>?>
+        get() = repository.reciverMessageMutableState
 
     var senderID = ""
 
