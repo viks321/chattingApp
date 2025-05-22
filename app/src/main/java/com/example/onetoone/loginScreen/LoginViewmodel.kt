@@ -15,6 +15,7 @@ import com.example.onetoone.repositary.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -24,12 +25,15 @@ import javax.inject.Inject
 class LoginViewmodel @Inject constructor(val repository: Repository,val userDataPref : UserDataPref): ViewModel() {
 
     var isLoading by mutableStateOf(false)
-    var isLoadingData by mutableStateOf(false)
+
+    private val _isLoadingData = MutableStateFlow<Boolean>(false)
+    val isLoadingData : StateFlow<Boolean>
+        get() = _isLoadingData
 
     init {
         viewModelScope.launch {
             userDataPref.isLoginFlow.collectLatest {
-                isLoadingData = it!!
+                _isLoadingData.value = it!!
             }
         }
     }

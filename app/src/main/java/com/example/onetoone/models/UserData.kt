@@ -6,5 +6,5 @@ data class UserData(
     val email: String? = null,
     val password: String? = null,
     val phoneNo: String? = null,
-    val romms: Map<String, RoomModel>? = null
+    val rooms: Map<String, Messages>? = null
 )

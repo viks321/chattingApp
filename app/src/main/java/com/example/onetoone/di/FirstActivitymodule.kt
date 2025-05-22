@@ -5,6 +5,7 @@ import com.example.onetoone.chatRoomScreen.ChatRoomViewmodel
 import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
 import com.example.onetoone.homeScreen.HomeViewmodel
 import com.example.onetoone.loginScreen.LoginViewmodel
+import com.example.onetoone.profileScreen.ProfileViewmodel
 import com.example.onetoone.registrationScreen.RegistrationViewmodel
 import com.example.onetoone.repositary.Repository
 import com.google.firebase.auth.FirebaseAuth
@@ -25,6 +26,12 @@ class FirstActivitymodule {
     @Provides
     fun getUserDataPre(@ApplicationContext context: Context) : UserDataPref {
         return UserDataPref(context)
+    }
+
+    @Singleton
+    @Provides
+    fun profileViewmodel(userDataPref: UserDataPref): ProfileViewmodel{
+        return ProfileViewmodel(userDataPref)
     }
 
     @Singleton

@@ -18,6 +18,7 @@ import com.example.onetoone.homeScreen.homeScreen
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.loginScreen.LoginViewmodel
 import com.example.onetoone.loginScreen.loginScreen
+import com.example.onetoone.profileScreen.profileScreen
 import com.example.onetoone.registrationScreen.RegistrationViewmodel
 import com.example.onetoone.registrationScreen.registrationScreen
 import com.example.onetoone.ui.theme.OneToOneTheme
@@ -74,6 +75,12 @@ fun App() {
         composable(route = "chatRoomScreen"){
             //val userData = navController.previousBackStackEntry?.savedStateHandle?.get<LoginModel>("loginData")
             chatRoomScreen(navController)
+        }
+
+        //Logout screen
+        composable(route = "logoutScreen"){
+            //val userData = navController.previousBackStackEntry?.savedStateHandle?.get<LoginModel>("loginData")
+            profileScreen(navController)
         }
     }
 }

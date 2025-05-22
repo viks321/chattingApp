@@ -1,5 +1,6 @@
 package com.example.onetoone.loginScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +76,7 @@ fun screenPreview(){
 fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
 
     val loginViewmodel : LoginViewmodel = hiltViewModel()
+    val isLoadingData : State<Boolean> = loginViewmodel.isLoadingData.collectAsState()
 
     Box(
         Modifier
@@ -137,9 +140,10 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
             //Loding Screen
             lodingScreen()
         }
-        if(loginViewmodel.isLoadingData)
+        if(isLoadingData.value)
         {
-            navController.navigate("homeScreen")
+            navController.navigate("homeScreen"){
+            }
         }
 
         loginViewmodel.loginOnFirebase.observeForever(Observer {

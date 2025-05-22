@@ -70,4 +70,10 @@ class UserDataPref @Inject constructor(private val context: Context) {
         }
     }
 
+    suspend fun logout() {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
+
 }

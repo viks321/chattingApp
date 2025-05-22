@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -101,6 +102,13 @@ fun homeScreen(navController: NavController){
                                 modifier = Modifier
                                     .size(60.dp)
                                     .align(alignment = Alignment.CenterVertically)
+                                    .clickable {
+                                        navController.navigate("logoutScreen"){
+                                            popUpTo("homeScreen") {
+                                                inclusive = true // This removes the login screen from the back stack
+                                            }
+                                        }
+                                    }
                             )
                         }
 

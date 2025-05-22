@@ -35,7 +35,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,10 +42,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
-import com.example.onetoone.lodingScreen.lodingScreen
 import com.example.onetoone.models.ChatRoom
 import com.example.onetoone.models.LoginModel
-import com.example.onetoone.models.RoomModel
+import com.example.onetoone.models.Message
+import com.example.onetoone.models.Messages
 import com.example.onetoone.ui.theme.Hintgray
 import com.example.onetoone.ui.theme.Yellow
 
@@ -61,7 +60,16 @@ fun previewScreen(){
 fun chatRoomScreen(navController: NavController) {
 
     val chatRoomViewmodel : ChatRoomViewmodel = hiltViewModel()
-    val roomDataMessages : State<List<RoomModel>?> = chatRoomViewmodel.roomDataMessages.collectAsState()
+    val roomDataMessages : State<List<Messages>?> = chatRoomViewmodel.roomDataMessages.collectAsState()
+    val senderID : State<String> = chatRoomViewmodel.senderID.collectAsState()
+
+    //Toast.makeText(navController.context,senderID.value,Toast.LENGTH_LONG).show()
+
+    Log.d("VikasData",roomDataMessages.value.toString())
+
+    if (!senderID.value.isEmpty()){
+        chatRoomViewmodel.getMessageData(senderID.value)
+    }
 
     val loginData = navController
         .previousBackStackEntry
@@ -96,7 +104,7 @@ fun chatRoomScreen(navController: NavController) {
                                 text = "oneVone",
                                 color = Color.Black,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
+                                fontSize = 20.sp,
                                 modifier = Modifier
                                     .align(alignment = Alignment.CenterVertically)
                             )
@@ -118,17 +126,30 @@ fun chatRoomScreen(navController: NavController) {
                 Box(
                     modifier = Modifier.weight(1f)
                 ) {
-                    LazyColumn {
-                        items(roomDataMessages.value!!){
+
+                    val messageList = mutableListOf<Message>()
+                    for (value in roomDataMessages.value!!){
+                        value.messages?.forEach { (msgId, msg) ->
+                            messageList.add(msg)
+                        }
+                    }
+                    val sortedMessages = messageList.sortedBy {
+                        val time = it.senderMessage?.timestamp ?: it.receiverMessage?.timestamp ?: 0L
+                        time as Long
+                    }
+
+                    LazyColumn() {
+                        items(sortedMessages){
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                             )
                             {
-                                it.senderMessage?.forEach { (msgId, msg) ->
-                                    senderView(msg.message!!)
+                                if(it.senderMessage?.message!=null){
+                                    senderView(it.senderMessage?.message.toString())
                                 }
-                                it.receiverMessage?.forEach { (msgId, msg) ->
-                                    reciverView(msg.message!!)
+                                else if(it.receiverMessage?.message!=null)
+                                {
+                                    reciverView(it.receiverMessage?.message.toString())
                                 }
                             }
                         }
@@ -162,7 +183,12 @@ fun chatRoomScreen(navController: NavController) {
                             modifier = Modifier
                                 .size(30.dp)
                                 .clickable {
-                                    chatRoomViewmodel.createChatRoom(ChatRoom(state.value),loginData?.userID!!)
+                                    chatRoomViewmodel.createChatRoom(
+                                        ChatRoom(state.value),
+                                        loginData?.userID!!,
+                                        senderID.value
+                                    )
+                                    state.value = ""
                                 }
                         )},
                     )

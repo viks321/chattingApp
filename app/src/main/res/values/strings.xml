@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OneToOne</string>
+    <string name="app_name">oneVone</string>
     <string name="title_activity_first">FirstActivity</string>
     <string name="title_activity_second">SecondActivity</string>
 </resources>
