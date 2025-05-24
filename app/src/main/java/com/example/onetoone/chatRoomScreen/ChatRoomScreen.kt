@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +29,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -38,7 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,9 +66,7 @@ fun chatRoomScreen(navController: NavController) {
     val chatRoomViewmodel : ChatRoomViewmodel = hiltViewModel()
     val roomDataMessages : State<List<Messages>?> = chatRoomViewmodel.roomDataMessages.collectAsState()
     val senderID : State<String> = chatRoomViewmodel.senderID.collectAsState()
-    val chatterID : State<LoginModel> = chatRoomViewmodel.chatterID.collectAsState()
-
-    //Toast.makeText(navController.context,senderID.value,Toast.LENGTH_LONG).show()
+    val senderName : State<String> = chatRoomViewmodel.userName.collectAsState()
 
     Log.d("VikasData",roomDataMessages.value.toString())
 
@@ -76,6 +75,7 @@ fun chatRoomScreen(navController: NavController) {
         ?.savedStateHandle
         ?.get<LoginModel>("loginData")
 
+        //Toast.makeText(navController.context,loginData?.userName.toString(),Toast.LENGTH_LONG).show()
         chatRoomViewmodel.getMessageData(senderID.value,loginData?.userID.toString())
 
     Scaffold {
@@ -126,7 +126,7 @@ fun chatRoomScreen(navController: NavController) {
                             .height(1.dp))
                     }
                 }*/
-                ChatHeader()
+                ChatHeader(navController)
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier.weight(1f)
@@ -164,7 +164,7 @@ fun chatRoomScreen(navController: NavController) {
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ChatInputBar(roomDataMessages,loginData,chatRoomViewmodel,senderID.value)
+                ChatInputBar(roomDataMessages,loginData,chatRoomViewmodel,senderID.value,senderName)
 
                 /*Box(
                     modifier = Modifier
@@ -228,7 +228,9 @@ fun senderView(s: String) {
         ) {
             Text(
                 text = s,
-                color = Color.Black
+                color = Color.Black,
+                fontFamily = FontFamily(Font(R.font.nunito_medium)),
+                fontSize = 13.sp
             )
         }
     }
@@ -252,20 +254,32 @@ fun reciverView(s: String) {
         ) {
             Text(
                 text = s,
-                color = Color.White
+                color = Color.White,
+                fontFamily = FontFamily(Font(R.font.nunito_medium)),
+                fontSize = 13.sp
             )
         }
     }
 }
 
 @Composable
-fun ChatHeader() {
+fun ChatHeader(navController:NavController) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+
+            Icon(painter = painterResource(id = R.drawable.back_icon),
+                contentDescription = "user",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(30.dp)
+                    .align(alignment = Alignment.CenterVertically)
+                    .clickable { navController.navigate("homeScreen") }
+            )
+            Spacer(modifier = Modifier.width(10.dp))
             Image(
                 painter = painterResource(id = R.drawable.user_icon),
                 contentDescription = "Profile",
@@ -275,8 +289,14 @@ fun ChatHeader() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column {
-                Text("Larry Machigo", color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Online", color = Color(0xFFD0CFFF), fontSize = 12.sp)
+                Text(
+                    "Larry Machigo",
+                    color = Color.White,
+                    fontFamily = FontFamily(Font(R.font.nunito_bold)),
+                    fontSize = 15.sp
+                )
+                Text("Online", color = Color(0xFFD0CFFF), fontSize = 12.sp,
+                    fontFamily = FontFamily(Font(R.font.nunito_medium)))
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -336,53 +356,70 @@ fun ChatInputBar(
     roomDataMessages: State<List<Messages>?>,
     loginData: LoginModel?,
     chatRoomViewmodel: ChatRoomViewmodel,
-    senderID: String
+    senderID: String,
+    senderName: State<String>
 ) {
+    val state = remember { mutableStateOf("") }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(30.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.user_icon),
-            contentDescription = null,
-            tint = Color.Gray
-        )
-        Spacer(modifier = Modifier.width(8.dp))
+        Row(
+            modifier = Modifier
+                .background(Color.White, RoundedCornerShape(40.dp))
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.message_icon),
+                contentDescription = null,
+                tint = Color.Gray
+            )
+            TextField(
+                value = state.value,
+                onValueChange = {
+                    state.value = it
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
+                ),
+                colors = androidx.compose.material3.TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent, // Remove grey background
+                    focusedIndicatorColor = Color.Transparent, // Remove underline when focused
+                    unfocusedIndicatorColor = Color.Transparent, // Remove underline when not focused
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .background(color = Color.White),
+                placeholder = { Text(text = "Type here.....", color = Hintgray,fontFamily = FontFamily(Font(R.font.nunito_black)),
+                    fontSize = 13.sp)},
+                maxLines = 3,
+            )
 
-        val state = remember { mutableStateOf("") }
+            Spacer(modifier = Modifier.width(8.dp))
 
-        OutlinedTextField(
-            value = state.value,
-            onValueChange = {
-                state.value = it
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Done
-            ),
-            modifier = Modifier.fillMaxWidth().weight(1f),
-            placeholder = { Text(text = "Type here.....", color = Hintgray)},
-            shape = RoundedCornerShape(10.dp),
-            maxLines = 3,
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.send_icon),
-            contentDescription = null,
-            tint = Color.Black,
-            modifier = Modifier.clickable {
-                chatRoomViewmodel.createChatRoom(
-                    ChatRoom(state.value),
-                    loginData?.userID!!,
-                    senderID
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFF443ea8), RoundedCornerShape(40.dp))
+                    .padding(15.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.send_icon),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.clickable {
+                        chatRoomViewmodel.createChatRoom(
+                            ChatRoom(state.value),
+                            loginData?.userID!!,
+                            senderID,
+                            senderName.value,
+                            loginData.userName!!
+                        )
+                        state.value = ""
+                    }
                 )
-                state.value = ""
             }
-        )
-    }
+        }
 }

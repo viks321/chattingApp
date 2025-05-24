@@ -26,8 +26,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
 import com.example.onetoone.lodingScreen.lodingScreen
 import com.example.onetoone.models.LoginModel
+import com.example.onetoone.models.Messages
 import com.example.onetoone.ui.theme.Hintgray
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -55,6 +59,8 @@ fun homeScreen(navController: NavController){
     val homeViewmodel : HomeViewmodel = hiltViewModel()
     val getAllMembers : State<List<LoginModel>> = homeViewmodel.allMemberLiveData.collectAsState()
     val currentUserID : State<String> = homeViewmodel.currentUserID.collectAsState()
+    val chatRoomLiveData : State<List<Messages>?> = homeViewmodel.chatRoomLiveData.collectAsState()
+
     homeViewmodel.getAllMembers(currentUserID.value)
 
     Scaffold() {
@@ -66,10 +72,7 @@ fun homeScreen(navController: NavController){
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                if (getAllMembers.value.isEmpty()) {
-                    //Loding Screen
-                    lodingScreen()
-                }
+
 
                 Box {
                     Column {
@@ -90,13 +93,15 @@ fun homeScreen(navController: NavController){
                                 text = "oneVone",
                                 color = Color.Black,
                                 fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily(Font(R.font.nunito_bold)),
                                 fontSize = 16.sp,
                                 modifier = Modifier.align(alignment = Alignment.CenterVertically)
                             )
-                            Image(painter = painterResource(id = R.drawable.user_icon),
+                            Image(painter = painterResource(id = R.drawable.cu_user_demo),
                                 contentDescription = "user",
                                 modifier = Modifier
                                     .size(60.dp)
+                                    .background(Color.White, CircleShape)
                                     .align(alignment = Alignment.CenterVertically)
                                     .clickable {
                                         navController.navigate("logoutScreen") {
@@ -128,7 +133,7 @@ fun homeScreen(navController: NavController){
                                 .background(Color(0xFFF9F9F9))
                                 .padding(vertical = 8.dp)
                         ) {
-                            items(getAllMembers.value) { chat ->
+                            items(chatRoomLiveData.value!!) { chat ->
                                 ChatListItem(chat,navController)
                             }
                         }
@@ -180,27 +185,28 @@ fun homeScreen(navController: NavController){
 }
 
 @Composable
-fun ChatListItem(chat: LoginModel, navController: NavController) {
+fun ChatListItem(chat: Messages, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                val loginData = LoginModel(chat.userID, chat.email,chat.userName,chat.password,chat.phoneNo)
+                /*val loginData =
+                    LoginModel(chat.userID, chat.userName, chat.email, chat.password, chat.phoneNo)
                 navController.currentBackStackEntry
                     ?.savedStateHandle
                     ?.set("loginData", loginData)
-                navController.navigate("chatRoomScreen")
+                navController.navigate("chatRoomScreen")*/
             }
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = painterResource(id = R.drawable.user_icon),
+            painter = painterResource(id = R.drawable.user_demo),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(50.dp)
-                .background(Color.Gray, CircleShape)
+                .size(80.dp)
+                .background(Color.White, CircleShape)
                 .padding(2.dp)
         )
 
@@ -211,28 +217,30 @@ fun ChatListItem(chat: LoginModel, navController: NavController) {
                 Text(
                     text = chat.userName.toString(),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily(Font(R.font.nunito_bold)),
                     color = Color.Black
                 )
             }
 
             Text(
-                text = chat.userName.toString(),
+                text = chat.lastMessage.toString(),
                 fontSize = 14.sp,
                 //color = if (chat.isTyping) Color(0xFF673AB7) else Color.Gray,
                 maxLines = 1,
+                fontFamily = FontFamily(Font(R.font.nunito_light)),
                 overflow = TextOverflow.Ellipsis
             )
         }
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "00:00",
+                text = chat.lastMessageTime.toString(),
                 fontSize = 12.sp,
+                fontFamily = FontFamily(Font(R.font.nunito_light)),
                 color = Color.Gray
             )
 
-            /*if (chat.unreadCount > 0) {
+            if (chat.messageCount!! > 0) {
                 Box(
                     modifier = Modifier
                         .padding(top = 4.dp)
@@ -240,12 +248,13 @@ fun ChatListItem(chat: LoginModel, navController: NavController) {
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = chat.unreadCount.toString(),
+                        text = chat.messageCount.toString(),
                         fontSize = 12.sp,
                         color = Color.White
                     )
-                }*/
+                }
             }
         }
-    }
+   }
+}
 

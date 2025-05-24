@@ -19,9 +19,9 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatRoomViewmodel @Inject constructor(val repository: Repository,val userDataPref: UserDataPref):ViewModel() {
 
-    val _chatterID = MutableStateFlow<LoginModel>(LoginModel())
-    val chatterID : StateFlow<LoginModel>
-        get() = _chatterID
+    val _userName = MutableStateFlow<String>("")
+    val userName : StateFlow<String>
+        get() = _userName
 
     val createRoomLiveStateFlow : StateFlow<Boolean>
         get() = repository.createRoomMutableStateFlow
@@ -39,11 +39,16 @@ class ChatRoomViewmodel @Inject constructor(val repository: Repository,val userD
                 _senderId.value = it!!
             }
         }
+        viewModelScope.launch {
+            userDataPref.userNameFlow.collectLatest {
+                _userName.value = it!!
+            }
+        }
     }
 
-    fun createChatRoom(chatRoom: ChatRoom,receiverID: String,sender: String){
+    fun createChatRoom(chatRoom: ChatRoom,receiverID: String,sender: String,senderName:String,receiverName:String){
         viewModelScope.launch {
-            repository.createChatRoomFirebase(receiverID,sender,chatRoom)
+            repository.createChatRoomFirebase(receiverID,sender,chatRoom,senderName,receiverName)
         }
     }
 

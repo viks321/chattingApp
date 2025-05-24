@@ -10,6 +10,7 @@ import com.example.onetoone.models.ChatRoom
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.Message
 import com.example.onetoone.models.Messages
+import com.example.onetoone.models.UserActivity
 import com.example.onetoone.models.UserData
 import com.example.onetoone.models.Users
 import com.google.firebase.auth.FirebaseAuth
@@ -23,6 +24,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth,val firebaseDatabase: FirebaseDatabase,val userDataPref: UserDataPref) {
@@ -95,17 +99,56 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             }
     }
 
+    private val _chatRoomDataMutableState = MutableStateFlow<List<Messages>?>(emptyList())
+    val chatRoomDataMutableState: StateFlow<List<Messages>?>
+        get() = _chatRoomDataMutableState
+
     private val _allMemberMutableLiveData = MutableStateFlow<List<LoginModel>>(emptyList())
     val allMemberMutableLiveData: StateFlow<List<LoginModel>>
         get() = _allMemberMutableLiveData
 
     suspend fun getAllMemberFromFirebase(currentUserID: String){
+
+        var chatRoomList = mutableListOf<Messages>()
+
         val userRef = firebaseDatabase.getReference("allMembers").child("allUsers")
         userRef.get().addOnCompleteListener { snapsort ->
             val userData = mutableListOf<LoginModel>()
             val userList = snapsort.result.children.mapNotNull { it.getValue(LoginModel::class.java) }
+            val chatUserList = snapsort.result.children.mapNotNull { it.getValue(UserData::class.java) }
+            Log.d("FirebaseVikas", "chatUsers: ${chatUserList.toString()}")
             userData.addAll(userList)
             userData.removeAll { it.userID == currentUserID }
+
+            for (i in chatUserList.indices){
+
+                val rommsMap = chatUserList.get(i).rooms
+                if (rommsMap != null) {
+                    for ((chatPartnerID, chatRoom) in rommsMap) {
+
+                        chatRoomList.add(chatRoom)
+                    }
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        _chatRoomDataMutableState.emit(chatRoomList)
+                    }
+
+                    Log.d("FirebaseRoom", "Data: ${chatRoomList.toString()}")
+                } else {
+                    Log.d("FirebaseChat", "No chat rooms found for this user.")
+                }
+
+            }
+
+            for (value in userList){
+                run {
+                    if (value.userID.equals(currentUserID)) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            userDataPref.saveUsername(value.userName.toString())
+                        }
+                    }
+                }
+            }
 
             CoroutineScope(Dispatchers.IO).launch {
                 _allMemberMutableLiveData.emit(userData)
@@ -122,13 +165,23 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
     val createRoomMutableStateFlow : StateFlow<Boolean>
         get() = _createRoomMutableStateFlow
 
-    suspend fun createChatRoomFirebase(receiverID: String, sernderID: String,chatRoom: ChatRoom){
+    suspend fun createChatRoomFirebase(receiverID: String, sernderID: String,chatRoom: ChatRoom,receiverName:String,senderName: String){
+
+        val lastMessagetime = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            .format(Date())
 
         val userRef = firebaseDatabase.getReference("allMembers")
         //val senderMessage = ChatRoom("senderMessage",chatRoom.message)
         val senderMessage = mapOf(
             "senderMessage" to ChatRoom(chatRoom.message,ServerValue.TIMESTAMP)
         )
+
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("userID").setValue(sernderID)
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("userName").setValue(senderName)
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessage").setValue("No message here..")
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessageTime").setValue("00:00 Am")
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("isActive").setValue(0)
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("messageCount").setValue(0)
         //val receiverMessage = userRef.child("allUsers").child(chatRoom.userID!!).child("romms").child(chatroomID).child("receiverMessage")
         userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("messages").push().setValue(senderMessage)
             .addOnSuccessListener {
@@ -147,6 +200,12 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             "receiverMessage" to ChatRoom(chatRoom.message,ServerValue.TIMESTAMP)
         )
         //val receiverMessage = ChatRoom("receiverMessage",chatRoom.message)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("userID").setValue(receiverID)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("userName").setValue(receiverName)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("lastMessage").setValue(chatRoom.message)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("lastMessageTime").setValue(lastMessagetime)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("isActive").setValue(0)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("messageCount").setValue(1)
         //userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("receiverMessage").push().setValue(ChatRoom(chatRoom.message))
         userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("messages").push().setValue(receiverMessage)
             .addOnSuccessListener {
@@ -223,6 +282,8 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                                 _reciverMessageMutableState.emit(receiverMsgList)
                             }
                         }
+
+                        Log.d("FirebaseVikas", "Data: ${receiverMsgList.toString()}")
                     } else {
                         Log.d("FirebaseChat", "No chat rooms found for this user.")
                     }
@@ -234,6 +295,25 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             }
         })
 
+    }
+
+
+    suspend fun addMessageDetailsOnFirebase(receiverID: String,lastMessage: String?,lastMessageTime: String,messageCount: Int){
+        val userRef = firebaseDatabase.getReference("allMembers").child("allUsers").child(receiverID)
+        val userActivity = UserActivity(lastMessage, lastMessageTime, messageCount)
+
+        val messageDetails = mapOf(
+            "lastMessage" to lastMessage,
+            "lastMessageTime" to lastMessageTime,
+            "messageCount" to messageCount
+        )
+        userRef.updateChildren(messageDetails)
+            .addOnSuccessListener {
+                _addMemberOnFirebase.postValue(Response.Success(true))
+            }
+            .addOnFailureListener {
+                _addMemberOnFirebase.postValue(Response.Error("Failed"))
+            }
     }
 
 }

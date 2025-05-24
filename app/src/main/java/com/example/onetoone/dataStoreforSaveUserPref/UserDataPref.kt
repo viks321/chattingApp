@@ -32,7 +32,7 @@ class UserDataPref @Inject constructor(private val context: Context) {
         }
     val userNameFlow: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferenceKeys.USER_NAME]
+            preferences[UserPreferenceKeys.USER_NAME] ?: "default"
         }
     val userEmailFlow: Flow<String?> = context.dataStore.data
         .map { preferences ->
