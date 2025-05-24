@@ -19,6 +19,7 @@ class ProfileViewmodel @Inject constructor(val userDataPref: UserDataPref): View
     fun logout(){
         viewModelScope.launch {
             userDataPref.logout()
+            userDataPref.saveIslogin(false)
         }
         return
     }

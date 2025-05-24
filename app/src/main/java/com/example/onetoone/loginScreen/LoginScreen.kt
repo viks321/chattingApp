@@ -78,6 +78,11 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
     val loginViewmodel : LoginViewmodel = hiltViewModel()
     val isLoadingData : State<Boolean> = loginViewmodel.isLoadingData.collectAsState()
 
+    if(isLoadingData.value)
+    {
+        navController.navigate("homeScreen")
+    }
+
     Box(
         Modifier
             .background(color = DarkBackgroun)
@@ -140,29 +145,6 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
             //Loding Screen
             lodingScreen()
         }
-        if(isLoadingData.value)
-        {
-            navController.navigate("homeScreen"){
-            }
-        }
-
-        loginViewmodel.loginOnFirebase.observeForever(Observer {
-            when(it){
-
-                is Response.Loading ->{
-                    loginViewmodel.isLoading = true
-                }
-                is Response.Success ->{
-                    if(loginViewmodel.loginOnFirebase.value?.data!!){
-                        loginViewmodel.isLoading = false
-                        navController.navigate("homeScreen")
-                    }
-                }
-                is Response.Error ->{
-                    loginViewmodel.isLoading = false
-                }
-            }
-        })
 
     }
 
@@ -233,6 +215,23 @@ fun loginFormButtonView(
             {
 
                 loginViewmodel.loginFirebase()
+                loginViewmodel.loginOnFirebase.observeForever(Observer {
+                    when(it){
+
+                        is Response.Loading ->{
+                            loginViewmodel.isLoading = true
+                        }
+                        is Response.Success ->{
+                            if(loginViewmodel.loginOnFirebase.value?.data!!){
+                                loginViewmodel.isLoading = false
+                                navController.navigate("homeScreen")
+                            }
+                        }
+                        is Response.Error ->{
+                            loginViewmodel.isLoading = false
+                        }
+                    }
+                })
                 //loginViewmodel.loginData(stateEmail.value,statePassword.value)
                 //errorMessage.value = "Email: "+loginViewmodel.loginCradential.value?.email + "\nPassword: "+loginViewmodel.loginCradential.value?.password
                 //onClick(LoginModel(loginViewmodel.loginCradential.value!!.email,loginViewmodel.loginCradential.value!!.password))

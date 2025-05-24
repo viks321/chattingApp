@@ -1,8 +1,17 @@
 package com.example.onetoone.chatRoomScreen
 
-import android.util.Log
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -29,15 +37,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -47,7 +51,6 @@ import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.Message
 import com.example.onetoone.models.Messages
 import com.example.onetoone.ui.theme.Hintgray
-import com.example.onetoone.ui.theme.Yellow
 
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -62,19 +65,18 @@ fun chatRoomScreen(navController: NavController) {
     val chatRoomViewmodel : ChatRoomViewmodel = hiltViewModel()
     val roomDataMessages : State<List<Messages>?> = chatRoomViewmodel.roomDataMessages.collectAsState()
     val senderID : State<String> = chatRoomViewmodel.senderID.collectAsState()
+    val chatterID : State<LoginModel> = chatRoomViewmodel.chatterID.collectAsState()
 
     //Toast.makeText(navController.context,senderID.value,Toast.LENGTH_LONG).show()
 
     Log.d("VikasData",roomDataMessages.value.toString())
 
-    if (!senderID.value.isEmpty()){
-        chatRoomViewmodel.getMessageData(senderID.value)
-    }
-
     val loginData = navController
         .previousBackStackEntry
         ?.savedStateHandle
         ?.get<LoginModel>("loginData")
+
+        chatRoomViewmodel.getMessageData(senderID.value,loginData?.userID.toString())
 
     Scaffold {
         Box(modifier = Modifier
@@ -82,10 +84,12 @@ fun chatRoomScreen(navController: NavController) {
             .fillMaxSize()){
 
             Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF5C4DFF))
+                    .padding(16.dp)
             ) {
-                Box {
+                /*Box {
                     Column {
                         Row(
                             modifier = Modifier
@@ -98,7 +102,7 @@ fun chatRoomScreen(navController: NavController) {
                                 modifier = Modifier
                                     .size(30.dp)
                                     .align(alignment = Alignment.CenterVertically)
-                                    .clickable { navController.popBackStack() }
+                                    .clickable { navController.navigate("homeScreen") }
                             )
                             Text(
                                 text = "oneVone",
@@ -121,11 +125,14 @@ fun chatRoomScreen(navController: NavController) {
                             .background(color = Hintgray)
                             .height(1.dp))
                     }
-                }
-
+                }*/
+                ChatHeader()
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier.weight(1f)
                 ) {
+
+                    Log.d("FirebaseChat", "userID with: ${roomDataMessages.value.toString()}")
 
                     val messageList = mutableListOf<Message>()
                     for (value in roomDataMessages.value!!){
@@ -138,10 +145,11 @@ fun chatRoomScreen(navController: NavController) {
                         time as Long
                     }
 
-                    LazyColumn() {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(sortedMessages){
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             )
                             {
                                 if(it.senderMessage?.message!=null){
@@ -155,8 +163,10 @@ fun chatRoomScreen(navController: NavController) {
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                ChatInputBar(roomDataMessages,loginData,chatRoomViewmodel,senderID.value)
 
-                Box(
+                /*Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
@@ -192,7 +202,7 @@ fun chatRoomScreen(navController: NavController) {
                                 }
                         )},
                     )
-                }
+                }*/
             }
 
         }
@@ -203,41 +213,176 @@ fun chatRoomScreen(navController: NavController) {
 @Composable
 fun senderView(s: String) {
 
-    Box(
-        modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth()
-            .padding(50.dp, 0.dp, 0.dp, 0.dp),
-        contentAlignment = Alignment.Center
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
     ) {
-        Text(
-            text = s,
-            fontSize = 15.sp,
-            color = Yellow,
+        Box(
             modifier = Modifier
-                .shadow(8.dp, shape = RoundedCornerShape(10.dp))
-                .align(alignment = Alignment.CenterEnd)
-                .padding(25.dp)
-        )
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .padding(12.dp)
+                .widthIn(max = 260.dp)
+        ) {
+            Text(
+                text = s,
+                color = Color.Black
+            )
+        }
     }
 }
 
 @Composable
 fun reciverView(s: String) {
 
-    Box(
-        modifier = Modifier
-            .padding(10.dp)
-            .padding(0.dp, 0.dp, 50.dp, 0.dp),
-        contentAlignment = Alignment.Center
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
     ) {
-        Text(
-            text = s,
-            fontSize = 15.sp,
-            color = Color.Black,
+        Box(
             modifier = Modifier
-                .shadow(8.dp, shape = RoundedCornerShape(10.dp))
-                .padding(25.dp)
+                .background(
+                    color = Color(0xFF443ea8),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .padding(12.dp)
+                .widthIn(max = 260.dp)
+        ) {
+            Text(
+                text = s,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatHeader() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                painter = painterResource(id = R.drawable.user_icon),
+                contentDescription = "Profile",
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.White, CircleShape)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text("Larry Machigo", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Online", color = Color(0xFFD0CFFF), fontSize = 12.sp)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            IconButton(onClick = { }) {
+                Icon(painter = painterResource(id = android.R.drawable.ic_menu_camera), contentDescription = null, tint = Color.White)
+            }
+            IconButton(onClick = { }) {
+                Icon(painter = painterResource(id = android.R.drawable.ic_menu_call), contentDescription = null, tint = Color.White)
+            }
+        }
+    }
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun ChatMessages(roomDataMessages: State<List<Messages>?>) {
+
+    Box(
+        //modifier = Modifier.weight(1f)
+    ) {
+
+        Log.d("FirebaseChat", "userID with: ${roomDataMessages.value.toString()}")
+
+        val messageList = mutableListOf<Message>()
+        for (value in roomDataMessages.value!!){
+            value.messages?.forEach { (msgId, msg) ->
+                messageList.add(msg)
+            }
+        }
+        val sortedMessages = messageList.sortedBy {
+            val time = it.senderMessage?.timestamp ?: it.receiverMessage?.timestamp ?: 0L
+            time as Long
+        }
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(sortedMessages){
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                )
+                {
+                    if(it.senderMessage?.message!=null){
+                        senderView(it.senderMessage?.message.toString())
+                    }
+                    else if(it.receiverMessage?.message!=null)
+                    {
+                        reciverView(it.receiverMessage?.message.toString())
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatInputBar(
+    roomDataMessages: State<List<Messages>?>,
+    loginData: LoginModel?,
+    chatRoomViewmodel: ChatRoomViewmodel,
+    senderID: String
+) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(30.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.user_icon),
+            contentDescription = null,
+            tint = Color.Gray
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+
+        val state = remember { mutableStateOf("") }
+
+        OutlinedTextField(
+            value = state.value,
+            onValueChange = {
+                state.value = it
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done
+            ),
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            placeholder = { Text(text = "Type here.....", color = Hintgray)},
+            shape = RoundedCornerShape(10.dp),
+            maxLines = 3,
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+        Icon(
+            painter = painterResource(id = R.drawable.send_icon),
+            contentDescription = null,
+            tint = Color.Black,
+            modifier = Modifier.clickable {
+                chatRoomViewmodel.createChatRoom(
+                    ChatRoom(state.value),
+                    loginData?.userID!!,
+                    senderID
+                )
+                state.value = ""
+            }
         )
     }
 }

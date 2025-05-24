@@ -48,8 +48,8 @@ class FirstActivitymodule {
 
     @Singleton
     @Provides
-    fun homeViewmodelInstance(repository: Repository): HomeViewmodel{
-        return HomeViewmodel(repository)
+    fun homeViewmodelInstance(repository: Repository,userDataPref: UserDataPref): HomeViewmodel{
+        return HomeViewmodel(repository,userDataPref)
     }
 
     @Singleton

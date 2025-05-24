@@ -99,13 +99,18 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
     val allMemberMutableLiveData: StateFlow<List<LoginModel>>
         get() = _allMemberMutableLiveData
 
-    suspend fun getAllMemberFromFirebase(){
+    suspend fun getAllMemberFromFirebase(currentUserID: String){
         val userRef = firebaseDatabase.getReference("allMembers").child("allUsers")
         userRef.get().addOnCompleteListener { snapsort ->
+            val userData = mutableListOf<LoginModel>()
             val userList = snapsort.result.children.mapNotNull { it.getValue(LoginModel::class.java) }
+            userData.addAll(userList)
+            userData.removeAll { it.userID == currentUserID }
+
             CoroutineScope(Dispatchers.IO).launch {
-                _allMemberMutableLiveData.emit(userList)
+                _allMemberMutableLiveData.emit(userData)
             }
+
             Log.d("Firebase", "Users: $userList")
         }
             .addOnFailureListener {
@@ -170,13 +175,13 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
     val reciverMessageMutableState: StateFlow<List<Messages>?>
         get() = _reciverMessageMutableState
 
-    suspend fun getMessagesFromFirebase(userID: String){
+    suspend fun getMessagesFromFirebase(userID: String,roomID: String){
         val userRef = firebaseDatabase.getReference("allMembers").child("allUsers").child(userID)
 
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val messages = mutableListOf<Message>()
-                var senderMsgList = mutableListOf<ChatRoom>()
+                val messages = mutableListOf<Messages>()
+                var userData = mutableListOf<UserData>()
                 var receiverMsgList = mutableListOf<Messages>()
 
                 /*for (child in snapshot.children) {
@@ -186,6 +191,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                     }
                 }*/
 
+                //Toast.makeText(context,"Call me",Toast.LENGTH_LONG).show()
                 //val userList = snapshot.children.mapNotNull { it.getValue(UserData::class.java) }
                 val userList = snapshot.getValue(UserData::class.java)
                 //Log.e("Firebase", "userData: ${snapshot.value.toString()}")
@@ -194,8 +200,11 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                     if (rommsMap != null) {
                         for ((chatPartnerID, chatRoom) in rommsMap) {
                             Log.d("FirebaseChat", "Chat with: $chatPartnerID")
+                            Log.d("FirebaseChat", "userID with: $roomID")
 
-                            receiverMsgList.add(chatRoom)
+                            if (chatPartnerID.equals(roomID)){
+                                receiverMsgList.add(chatRoom)
+                            }
 
                             // Receiver messages
                             /*chatRoom.receiverMessage?.forEach { (msgId, msg) ->
