@@ -103,41 +103,50 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
     val chatRoomDataMutableState: StateFlow<List<Messages>?>
         get() = _chatRoomDataMutableState
 
-    private val _allMemberMutableLiveData = MutableStateFlow<List<LoginModel>>(emptyList())
-    val allMemberMutableLiveData: StateFlow<List<LoginModel>>
+    private val _allMemberMutableLiveData = MutableStateFlow<List<UserData>>(emptyList())
+    val allMemberMutableLiveData: StateFlow<List<UserData>>
         get() = _allMemberMutableLiveData
 
     suspend fun getAllMemberFromFirebase(currentUserID: String){
+
+        Log.d("FirebaseVikasdvjjbjvbsdhjbvjhsdabvjbdvj", "Call vikas")
 
         var chatRoomList = mutableListOf<Messages>()
 
         val userRef = firebaseDatabase.getReference("allMembers").child("allUsers")
         userRef.get().addOnCompleteListener { snapsort ->
-            val userData = mutableListOf<LoginModel>()
-            val userList = snapsort.result.children.mapNotNull { it.getValue(LoginModel::class.java) }
+
+            val userData = mutableListOf<UserData>()
+            val userDataNEW = mutableListOf<UserData>()
+            val myChatData = mutableListOf<UserData>()
+            val userList = snapsort.result.children.mapNotNull { it.getValue(UserData::class.java) }
             val chatUserList = snapsort.result.children.mapNotNull { it.getValue(UserData::class.java) }
             Log.d("FirebaseVikas", "chatUsers: ${chatUserList.toString()}")
             userData.addAll(userList)
+            myChatData.addAll(chatUserList)
             userData.removeAll { it.userID == currentUserID }
+
 
             for (i in chatUserList.indices){
 
-                val rommsMap = chatUserList.get(i).rooms
-                if (rommsMap != null) {
-                    for ((chatPartnerID, chatRoom) in rommsMap) {
+                if(chatUserList.get(i).userID.equals(currentUserID)){
 
-                        chatRoomList.add(chatRoom)
+                    val rommsMap = chatUserList.get(i).rooms
+                    if (rommsMap != null) {
+                        for ((chatPartnerID, chatRoom) in rommsMap) {
+                            chatRoomList.add(chatRoom)
+                        }
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            _chatRoomDataMutableState.emit(chatRoomList)
+                        }
+
+                        Log.d("FirebaseRoom", "Data: ${chatRoomList.toString()}")
+                    } else {
+                        Log.d("FirebaseChat", "No chat rooms found for this user.")
                     }
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        _chatRoomDataMutableState.emit(chatRoomList)
-                    }
-
-                    Log.d("FirebaseRoom", "Data: ${chatRoomList.toString()}")
-                } else {
-                    Log.d("FirebaseChat", "No chat rooms found for this user.")
                 }
-
             }
 
             for (value in userList){
@@ -149,6 +158,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                     }
                 }
             }
+
 
             CoroutineScope(Dispatchers.IO).launch {
                 _allMemberMutableLiveData.emit(userData)
@@ -176,10 +186,10 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             "senderMessage" to ChatRoom(chatRoom.message,ServerValue.TIMESTAMP)
         )
 
-        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("userID").setValue(sernderID)
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("userID").setValue(receiverID)
         userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("userName").setValue(senderName)
-        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessage").setValue("No message here..")
-        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessageTime").setValue("00:00 Am")
+        /*userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessage").setValue("No message here..")
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessageTime").setValue("00:00 Am")*/
         userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("isActive").setValue(0)
         userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("messageCount").setValue(0)
         //val receiverMessage = userRef.child("allUsers").child(chatRoom.userID!!).child("romms").child(chatroomID).child("receiverMessage")
@@ -200,7 +210,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             "receiverMessage" to ChatRoom(chatRoom.message,ServerValue.TIMESTAMP)
         )
         //val receiverMessage = ChatRoom("receiverMessage",chatRoom.message)
-        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("userID").setValue(receiverID)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("userID").setValue(sernderID)
         userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("userName").setValue(receiverName)
         userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("lastMessage").setValue(chatRoom.message)
         userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("lastMessageTime").setValue(lastMessagetime)
@@ -314,6 +324,65 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             .addOnFailureListener {
                 _addMemberOnFirebase.postValue(Response.Error("Failed"))
             }
+    }
+
+
+    suspend fun createChatRoomForMemberList(receiverID: String, sernderID: String,receiverName:String,senderName: String){
+
+        val lastMessagetime = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            .format(Date())
+
+        val userRef = firebaseDatabase.getReference("allMembers")
+        //val senderMessage = ChatRoom("senderMessage",chatRoom.message)
+        /*val senderMessage = mapOf(
+            "senderMessage" to ChatRoom(chatRoom.message,ServerValue.TIMESTAMP)
+        )*/
+
+        val sernder = Messages(userID = receiverID, userName = senderName, lastMessage = "No message here...", lastMessageTime = "00:00 AM/PM", messageCount = 0,isActive = 0)
+        /*userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("userID").setValue(sernderID)
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("userName").setValue(senderName)
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessage").setValue("No message here..")
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("lastMessageTime").setValue("00:00 Am")
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("isActive").setValue(0)
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).child("messageCount").setValue(0)*/
+        //val receiverMessage = userRef.child("allUsers").child(chatRoom.userID!!).child("romms").child(chatroomID).child("receiverMessage")
+        userRef.child("allUsers").child(sernderID).child("rooms").child(receiverID).setValue(sernder)
+            .addOnSuccessListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    _createRoomMutableStateFlow.emit(true)
+                }
+
+            }
+            .addOnFailureListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    _createRoomMutableStateFlow.emit(false)
+                }
+            }
+
+        /*val receiverMessage = mapOf(
+            "receiverMessage" to ChatRoom(chatRoom.message,ServerValue.TIMESTAMP)
+        )*/
+        val receiverMessage = Messages(userID = sernderID, userName = receiverName, lastMessage = "No message here...", lastMessageTime = "00:00 AM/PM", messageCount = 0,isActive = 0)
+        /*userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("userID").setValue(receiverID)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("userName").setValue(receiverName)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("lastMessage").setValue("No message here...")
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("lastMessageTime").setValue("00:00 AM/PM")
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("isActive").setValue(0)
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("messageCount").setValue(1)*/
+        //userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).child("receiverMessage").push().setValue(ChatRoom(chatRoom.message))
+        userRef.child("allUsers").child(receiverID).child("rooms").child(sernderID).setValue(receiverMessage)
+            .addOnSuccessListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    _createRoomMutableStateFlow.emit(true)
+                }
+
+            }
+            .addOnFailureListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    _createRoomMutableStateFlow.emit(false)
+                }
+            }
+
     }
 
 }

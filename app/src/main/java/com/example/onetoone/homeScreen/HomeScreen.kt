@@ -1,5 +1,6 @@
 package com.example.onetoone.homeScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,16 +18,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -38,11 +47,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
-import com.example.onetoone.lodingScreen.lodingScreen
+import com.example.onetoone.home.Home
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.Messages
+import com.example.onetoone.models.UserData
+import com.example.onetoone.myAllChatScreen.myAllChatScreen
+import com.example.onetoone.profileScreen.profileScreen
 import com.example.onetoone.ui.theme.Hintgray
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -54,207 +70,61 @@ fun previewScreen(){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun homeScreen(navController: NavController){
+fun homeScreen(navControllerHomeMain: NavController){
 
-    val homeViewmodel : HomeViewmodel = hiltViewModel()
-    val getAllMembers : State<List<LoginModel>> = homeViewmodel.allMemberLiveData.collectAsState()
-    val currentUserID : State<String> = homeViewmodel.currentUserID.collectAsState()
-    val chatRoomLiveData : State<List<Messages>?> = homeViewmodel.chatRoomLiveData.collectAsState()
+    val navController = rememberNavController()
 
-    homeViewmodel.getAllMembers(currentUserID.value)
-
-    Scaffold() {
-
-        Box(modifier = Modifier.padding(it)){
-
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-
-
-                Box {
-                    Column {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.menu_icon),
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .align(alignment = Alignment.CenterVertically),
-                                contentDescription = "menu"
-                            )
-                            Text(
-                                text = "oneVone",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily(Font(R.font.nunito_bold)),
-                                fontSize = 16.sp,
-                                modifier = Modifier.align(alignment = Alignment.CenterVertically)
-                            )
-                            Image(painter = painterResource(id = R.drawable.cu_user_demo),
-                                contentDescription = "user",
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .background(Color.White, CircleShape)
-                                    .align(alignment = Alignment.CenterVertically)
-                                    .clickable {
-                                        navController.navigate("logoutScreen") {
-                                            popUpTo("homeScreen") {
-                                                inclusive =
-                                                    true // This removes the login screen from the back stack
-                                            }
-                                        }
-                                    }
-                            )
-                        }
-
-                        Spacer(modifier = Modifier
-                            .fillMaxWidth()
-                            .background(color = Hintgray)
-                            .height(1.dp))
-
-                    }
-                }
-
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)) {
-
-
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color(0xFFF9F9F9))
-                                .padding(vertical = 8.dp)
-                        ) {
-                            items(chatRoomLiveData.value!!) { chat ->
-                                ChatListItem(chat,navController)
-                            }
-                        }
-
-                    }
-
-                    /*LazyColumn() {
-                            items(getAllMembers.value){
-
-                                Card(
-                                    onClick = {
-
-                                        val loginData = LoginModel(it.userID, it.email,it.userName,it.password,it.phoneNo)
-                                            navController.currentBackStackEntry
-                                                ?.savedStateHandle
-                                                ?.set("loginData", loginData)
-                                        navController.navigate("chatRoomScreen")
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    elevation = CardDefaults.cardElevation(5.dp)
-                                ) {
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Image(painter = painterResource(id = R.drawable.user_icon), contentDescription = "user", modifier = Modifier
-                                            .size(70.dp)
-                                            .weight(3f)
-                                            .align(alignment = Alignment.CenterVertically))
-                                        Text(text = it.userName!!, fontSize = 20.sp, color = Color.Black, modifier = Modifier
-                                            .align(alignment = Alignment.CenterVertically)
-                                            .weight(7f))
-                                    }
-
-                                }
-                            }
-                    }
-
-                }*/
-
-            }
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(navController)
         }
-
+    ) {paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            composable("home") { Home(navControllerHomeMain) }
+            composable("myAllChatScreen") { myAllChatScreen(navControllerHomeMain) }
+            composable("logoutScreen") { profileScreen(navControllerHomeMain) }
+        }
     }
 
 }
 
+
 @Composable
-fun ChatListItem(chat: Messages, navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                /*val loginData =
-                    LoginModel(chat.userID, chat.userName, chat.email, chat.password, chat.phoneNo)
-                navController.currentBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("loginData", loginData)
-                navController.navigate("chatRoomScreen")*/
-            }
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.user_demo),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(80.dp)
-                .background(Color.White, CircleShape)
-                .padding(2.dp)
-        )
+fun BottomNavBar(navController: NavController){
 
-        Spacer(modifier = Modifier.width(12.dp))
+    val items = listOf(
+        BottomNavItem("home", "Home", Icons.Default.Home),
+        BottomNavItem("myAllChatScreen", "Chat", Icons.Default.Face),
+        BottomNavItem("logoutScreen", "Profile", Icons.Default.Person)
+    )
 
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = chat.userName.toString(),
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily(Font(R.font.nunito_bold)),
-                    color = Color.Black
-                )
-            }
-
-            Text(
-                text = chat.lastMessage.toString(),
-                fontSize = 14.sp,
-                //color = if (chat.isTyping) Color(0xFF673AB7) else Color.Gray,
-                maxLines = 1,
-                fontFamily = FontFamily(Font(R.font.nunito_light)),
-                overflow = TextOverflow.Ellipsis
+    NavigationBar {
+        val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
+        items.forEach { item ->
+            NavigationBarItem(
+                selected = currentDestination == item.route,
+                onClick = {
+                    navController.navigate(item.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = { Icon(imageVector = item.icon, contentDescription = item.title) },
+                label = { Text(item.title) }
             )
         }
+    }
 
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = chat.lastMessageTime.toString(),
-                fontSize = 12.sp,
-                fontFamily = FontFamily(Font(R.font.nunito_light)),
-                color = Color.Gray
-            )
-
-            if (chat.messageCount!! > 0) {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .background(Color(0xFF673AB7), CircleShape)
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = chat.messageCount.toString(),
-                        fontSize = 12.sp,
-                        color = Color.White
-                    )
-                }
-            }
-        }
-   }
 }
+
+data class BottomNavItem(
+    val route: String,
+    val title: String,
+    val icon: ImageVector
+)
 

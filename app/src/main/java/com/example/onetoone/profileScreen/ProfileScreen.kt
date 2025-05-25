@@ -61,6 +61,12 @@ fun profileScreen(navController: NavController) {
                 Modifier
                     .background(color = Cardbacground)
                     .weight(5f)
+                    .clickable {
+                        navController.navigate("loginScreen"){
+                            popUpTo(0) { inclusive = true } // removes all backstack
+                            launchSingleTop = true
+                        }
+                    }
                     .padding(20.dp)
                     .fillMaxSize(), contentAlignment = Alignment.Center
             ) {
@@ -68,11 +74,6 @@ fun profileScreen(navController: NavController) {
                 Button(
                     onClick = {
                         profileViewmodel.logout()
-                        navController.navigate("loginScreen"){
-                            popUpTo("profileScreen") {
-                                inclusive = true // This removes the login screen from the back stack
-                            }
-                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

@@ -31,6 +31,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -75,8 +76,10 @@ fun chatRoomScreen(navController: NavController) {
         ?.savedStateHandle
         ?.get<LoginModel>("loginData")
 
-        //Toast.makeText(navController.context,loginData?.userName.toString(),Toast.LENGTH_LONG).show()
+        //Toast.makeText(navController.context,loginData?.userID.toString(),Toast.LENGTH_LONG).show()
+    LaunchedEffect(Unit) {
         chatRoomViewmodel.getMessageData(senderID.value,loginData?.userID.toString())
+    }
 
     Scaffold {
         Box(modifier = Modifier
@@ -126,7 +129,7 @@ fun chatRoomScreen(navController: NavController) {
                             .height(1.dp))
                     }
                 }*/
-                ChatHeader(navController)
+                ChatHeader(navController,loginData)
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier.weight(1f)
@@ -263,7 +266,7 @@ fun reciverView(s: String) {
 }
 
 @Composable
-fun ChatHeader(navController:NavController) {
+fun ChatHeader(navController: NavController, loginData: LoginModel?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -290,7 +293,7 @@ fun ChatHeader(navController:NavController) {
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    "Larry Machigo",
+                    loginData?.userName.toString(),
                     color = Color.White,
                     fontFamily = FontFamily(Font(R.font.nunito_bold)),
                     fontSize = 15.sp

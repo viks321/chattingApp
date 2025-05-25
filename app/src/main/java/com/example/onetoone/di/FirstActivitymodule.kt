@@ -5,6 +5,7 @@ import com.example.onetoone.chatRoomScreen.ChatRoomViewmodel
 import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
 import com.example.onetoone.homeScreen.HomeViewmodel
 import com.example.onetoone.loginScreen.LoginViewmodel
+import com.example.onetoone.myAllChatScreen.MyAllChatViewmodel
 import com.example.onetoone.profileScreen.ProfileViewmodel
 import com.example.onetoone.registrationScreen.RegistrationViewmodel
 import com.example.onetoone.repositary.Repository
@@ -32,6 +33,12 @@ class FirstActivitymodule {
     @Provides
     fun profileViewmodel(userDataPref: UserDataPref): ProfileViewmodel{
         return ProfileViewmodel(userDataPref)
+    }
+
+    @Singleton
+    @Provides
+    fun allMyChatViewmodel(repository: Repository,userDataPref: UserDataPref): MyAllChatViewmodel{
+        return MyAllChatViewmodel(repository, userDataPref)
     }
 
     @Singleton

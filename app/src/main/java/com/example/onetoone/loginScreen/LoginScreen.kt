@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
@@ -61,6 +63,7 @@ import com.example.onetoone.ui.theme.Yellow
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
@@ -78,9 +81,16 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
     val loginViewmodel : LoginViewmodel = hiltViewModel()
     val isLoadingData : State<Boolean> = loginViewmodel.isLoadingData.collectAsState()
 
-    if(isLoadingData.value)
-    {
-        navController.navigate("homeScreen")
+    LaunchedEffect(Unit) {
+        if(isLoadingData.value)
+        {
+            Toast.makeText(navController.context,isLoadingData.value.toString(),Toast.LENGTH_LONG).show()
+            navController.navigate("homeScreen"){
+                popUpTo("loginScreen") {
+                    inclusive = true // This removes the login screen from the back stack
+                }
+            }
+        }
     }
 
     Box(
@@ -224,7 +234,11 @@ fun loginFormButtonView(
                         is Response.Success ->{
                             if(loginViewmodel.loginOnFirebase.value?.data!!){
                                 loginViewmodel.isLoading = false
-                                navController.navigate("homeScreen")
+                                navController.navigate("homeScreen"){
+                                    popUpTo("loginScreen") {
+                                        inclusive = true // This removes the login screen from the back stack
+                                    }
+                                }
                             }
                         }
                         is Response.Error ->{

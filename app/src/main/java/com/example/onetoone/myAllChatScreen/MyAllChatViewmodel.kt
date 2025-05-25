@@ -1,12 +1,8 @@
-package com.example.onetoone.homeScreen
+package com.example.onetoone.myAllChatScreen
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.onetoone.dataStoreforSaveUserPref.UserDataPref
-import com.example.onetoone.models.ChatRoom
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.Messages
 import com.example.onetoone.models.UserData
@@ -20,7 +16,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewmodel @Inject constructor(val repository: Repository,val userDataPref: UserDataPref): ViewModel() {
+class MyAllChatViewmodel@Inject constructor(val repository: Repository, val userDataPref: UserDataPref): ViewModel() {
 
     val allMemberLiveData : StateFlow<List<UserData>>
         get() = repository.allMemberMutableLiveData
@@ -32,20 +28,10 @@ class HomeViewmodel @Inject constructor(val repository: Repository,val userDataP
     val currentUserID : StateFlow<String>
         get() = _currentUserID
 
-    private val _currentUserName = MutableStateFlow<String>("")
-    val currentUserName : StateFlow<String>
-        get() = _currentUserName
-
     init {
         viewModelScope.launch {
             userDataPref.userIDFlow.collectLatest {
                 _currentUserID.value = it!!
-            }
-        }
-
-        viewModelScope.launch {
-            userDataPref.userNameFlow.collectLatest {
-                _currentUserName.value = it!!
             }
         }
     }
@@ -53,12 +39,6 @@ class HomeViewmodel @Inject constructor(val repository: Repository,val userDataP
     fun getAllMembers(currentUserID: String){
         viewModelScope.launch(Dispatchers.IO){
             repository.getAllMemberFromFirebase(currentUserID)
-        }
-    }
-
-    fun createChatRoom(receiverID: String, sender: String, senderName:String, receiverName:String){
-        viewModelScope.launch {
-            repository.createChatRoomForMemberList(receiverID,sender,senderName,receiverName)
         }
     }
 
