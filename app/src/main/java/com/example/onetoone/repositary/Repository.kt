@@ -116,16 +116,10 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
         val userRef = firebaseDatabase.getReference("allMembers").child("allUsers")
         userRef.get().addOnCompleteListener { snapsort ->
 
-            val userData = mutableListOf<UserData>()
             val userDataNEW = mutableListOf<UserData>()
             val myChatData = mutableListOf<UserData>()
-            val userList = snapsort.result.children.mapNotNull { it.getValue(UserData::class.java) }
             val chatUserList = snapsort.result.children.mapNotNull { it.getValue(UserData::class.java) }
-            Log.d("FirebaseVikas", "chatUsers: ${chatUserList.toString()}")
-            userData.addAll(userList)
             myChatData.addAll(chatUserList)
-            userData.removeAll { it.userID == currentUserID }
-
 
             for (i in chatUserList.indices){
 
@@ -149,7 +143,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                 }
             }
 
-            for (value in userList){
+            /*for (value in userList){
                 run {
                     if (value.userID.equals(currentUserID)) {
                         CoroutineScope(Dispatchers.IO).launch {
@@ -157,18 +151,34 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                         }
                     }
                 }
+            }*/
+
+            for (userSnapshot in snapsort.result.children) {
+                val user = userSnapshot.getValue(UserData::class.java)
+                val messages = userSnapshot.getValue(Messages::class.java)
+                val roomsMap = user?.rooms
+                val userList = messages
+
+                // If user has no rooms or rooms does NOT contain the roomIdToExclude
+                if (roomsMap?.containsKey(currentUserID) == false || roomsMap == null) {
+                    user?.let { userDataNEW.add(it) }
+                }
             }
 
+            if(!userDataNEW.isEmpty()){
+                CoroutineScope(Dispatchers.IO).launch {
+                    userDataNEW.removeAll { it.userID == currentUserID }
+                    _allMemberMutableLiveData.emit(userDataNEW)
+                }
+                Log.d("FirebaseVikasYESRoom", "Users: ${userDataNEW}")
 
-            CoroutineScope(Dispatchers.IO).launch {
-                _allMemberMutableLiveData.emit(userData)
             }
 
-            Log.d("Firebase", "Users: $userList")
         }
-            .addOnFailureListener {
+
+        .addOnFailureListener {
                 Log.e("Firebase", "Failed to read", it)
-            }
+        }
     }
 
     private val _createRoomMutableStateFlow = MutableStateFlow<Boolean>(false)
