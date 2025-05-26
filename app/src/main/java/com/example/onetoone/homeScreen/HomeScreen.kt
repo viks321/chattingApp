@@ -58,7 +58,7 @@ import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.Messages
 import com.example.onetoone.models.UserData
 import com.example.onetoone.myAllChatScreen.myAllChatScreen
-import com.example.onetoone.profileScreen.profileScreen
+import com.example.onetoone.profileScreen.ProfileScreen
 import com.example.onetoone.ui.theme.Hintgray
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -86,7 +86,7 @@ fun homeScreen(navControllerHomeMain: NavController){
         ) {
             composable("home") { Home(navControllerHomeMain) }
             composable("myAllChatScreen") { myAllChatScreen(navControllerHomeMain) }
-            composable("logoutScreen") { profileScreen(navControllerHomeMain) }
+            composable("logoutScreen") { ProfileScreen(navControllerHomeMain) }
         }
     }
 

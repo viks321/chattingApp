@@ -81,14 +81,12 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
     val loginViewmodel : LoginViewmodel = hiltViewModel()
     val isLoadingData : State<Boolean> = loginViewmodel.isLoadingData.collectAsState()
 
-    LaunchedEffect(Unit) {
-        if(isLoadingData.value)
-        {
-            Toast.makeText(navController.context,isLoadingData.value.toString(),Toast.LENGTH_LONG).show()
-            navController.navigate("homeScreen"){
-                popUpTo("loginScreen") {
-                    inclusive = true // This removes the login screen from the back stack
-                }
+    if(isLoadingData.value)
+    {
+        //Toast.makeText(navController.context,isLoadingData.value.toString(),Toast.LENGTH_LONG).show()
+        navController.navigate("homeScreen"){
+            popUpTo("loginScreen") {
+                inclusive = true // This removes the login screen from the back stack
             }
         }
     }
