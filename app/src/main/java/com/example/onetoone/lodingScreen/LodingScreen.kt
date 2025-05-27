@@ -23,19 +23,21 @@ import com.example.onetoone.ui.theme.Yellow
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun previewScreen(){
-    lodingScreen()
+    lodingScreen(true)
 }
 
 @Composable
-fun lodingScreen() {
-    Box(modifier = Modifier.fillMaxSize().background(color = LodingColor).clickable(indication = null,              // 🔸 Disable ripple
-        interactionSource = remember { MutableInteractionSource() }) {  }) {
-        CircularProgressIndicator(
-            color = Yellow,
-            strokeWidth = 6.dp,
-            modifier = Modifier
-                .size(60.dp)
-                .align(alignment = Alignment.Center)
-        )
+fun lodingScreen(isVisible: Boolean) {
+    if(isVisible){
+        Box(modifier = Modifier.fillMaxSize().background(color = LodingColor).clickable(indication = null,              // 🔸 Disable ripple
+            interactionSource = remember { MutableInteractionSource() }) {  }) {
+            CircularProgressIndicator(
+                color = Yellow,
+                strokeWidth = 6.dp,
+                modifier = Modifier
+                    .size(60.dp)
+                    .align(alignment = Alignment.Center)
+            )
+        }
     }
 }

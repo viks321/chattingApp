@@ -11,6 +11,7 @@ import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.Messages
 import com.example.onetoone.models.UserData
 import com.example.onetoone.repositary.Repository
+import com.example.onetoone.repositary.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,10 +23,10 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewmodel @Inject constructor(val repository: Repository,val userDataPref: UserDataPref): ViewModel() {
 
-    val allMemberLiveData : StateFlow<List<UserData>>
+    val allMemberLiveData : StateFlow<Response<List<UserData>>>
         get() = repository.allMemberMutableLiveData
 
-    val chatRoomLiveData : StateFlow<List<Messages>?>
+    val chatRoomLiveData : StateFlow<Response<List<Messages>?>>
         get() = repository.chatRoomDataMutableState
 
     private val _currentUserID = MutableStateFlow<String>("")

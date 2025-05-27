@@ -151,7 +151,7 @@ fun loginScreen(onClick: (LoginModel)-> Unit,navController: NavController){
 
         if (loginViewmodel.isLoading) {
             //Loding Screen
-            lodingScreen()
+            lodingScreen(true)
         }
 
     }

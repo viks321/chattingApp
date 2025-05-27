@@ -1,5 +1,6 @@
 package com.example.onetoone.home
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,18 +39,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.onetoone.R
 import com.example.onetoone.homeScreen.HomeViewmodel
+import com.example.onetoone.lodingScreen.lodingScreen
 import com.example.onetoone.models.Messages
 import com.example.onetoone.models.UserData
+import com.example.onetoone.repositary.Response
 import com.example.onetoone.ui.theme.Hintgray
 
 @Composable
 fun Home(navController: NavController){
 
     val homeViewmodel : HomeViewmodel = hiltViewModel()
-    val getAllMembers : State<List<UserData>> = homeViewmodel.allMemberLiveData.collectAsState()
+    val getAllMembers by homeViewmodel.allMemberLiveData.collectAsState()
     val currentUserID : State<String> = homeViewmodel.currentUserID.collectAsState()
     val currentUserName : State<String> = homeViewmodel.currentUserName.collectAsState()
-    val chatRoomLiveData : State<List<Messages>?> = homeViewmodel.chatRoomLiveData.collectAsState()
 
     //Toast.makeText(navController.context,currentUserName.value,Toast.LENGTH_SHORT).show()
 
@@ -110,14 +113,36 @@ fun Home(navController: NavController){
                 .padding(20.dp)) {
 
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFFF9F9F9))
-                        .padding(vertical = 8.dp)
-                ) {
-                    items(getAllMembers.value) { chat ->
-                        ChatListItem(chat,navController,homeViewmodel,currentUserID,currentUserName)
+                when(getAllMembers){
+
+                    is Response.Loading -> {
+                        if (getAllMembers == null){
+                            lodingScreen(false)
+                        }
+                        else{
+                            lodingScreen(true)
+                        }
+                    }
+                    is Response.Success -> {
+
+                        lodingScreen(false)
+                        val users = (getAllMembers as Response.Success<List<UserData>>).data
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color(0xFFF9F9F9))
+                                .padding(vertical = 8.dp)
+                        ) {
+                            items(users!!) { chat ->
+                                ChatListItem(chat,navController,homeViewmodel,currentUserID,currentUserName)
+                            }
+                        }
+
+                    }
+                    is Response.Error ->{
+                        lodingScreen(false)
+                        Toast.makeText(navController.context,getAllMembers.errorMessage.toString(),Toast.LENGTH_LONG).show()
                     }
                 }
 
@@ -177,7 +202,12 @@ fun ChatListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                homeViewmodel.createChatRoom(chat.userID.toString(),currentUserID.value,currentUserName.value,chat.userName.toString())
+                homeViewmodel.createChatRoom(
+                    chat.userID.toString(),
+                    currentUserID.value,
+                    currentUserName.value,
+                    chat.userName.toString()
+                )
                 /*val loginData =
                     LoginModel(chat.userID, chat.userName, chat.email, chat.password, chat.phoneNo)
                 navController.currentBackStackEntry

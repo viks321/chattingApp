@@ -1,5 +1,6 @@
 package com.example.onetoone.myAllChatScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,8 +40,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.R
+import com.example.onetoone.lodingScreen.lodingScreen
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.models.Messages
+import com.example.onetoone.models.UserData
+import com.example.onetoone.repositary.Response
 import com.example.onetoone.ui.theme.Hintgray
 
 
@@ -55,7 +60,7 @@ fun myAllChatScreen(navController: NavController){
 
     val allChatViewmodel : MyAllChatViewmodel = hiltViewModel()
     val currentUserID : State<String> = allChatViewmodel.currentUserID.collectAsState()
-    val chatRoomLiveData : State<List<Messages>?> = allChatViewmodel.chatRoomLiveData.collectAsState()
+    val chatRoomLiveData by allChatViewmodel.chatRoomLiveData.collectAsState()
 
     LaunchedEffect(Unit) {
         allChatViewmodel.getAllMembers(currentUserID.value)
@@ -122,15 +127,40 @@ fun myAllChatScreen(navController: NavController){
                 .fillMaxSize()
                 .padding(20.dp)) {
 
+                when(chatRoomLiveData){
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFFF9F9F9))
-                        .padding(vertical = 8.dp)
-                ) {
-                    items(chatRoomLiveData.value!!) { chat ->
-                        ChatListItemData(chat,navController)
+                    is Response.Loading ->{
+                        if(chatRoomLiveData.data == null){
+                            lodingScreen(false)
+                        }
+                        else
+                        {
+                            lodingScreen(true)
+                        }
+                    }
+                    is Response.Success ->{
+
+                        lodingScreen(false)
+
+                        val user = (chatRoomLiveData as Response.Success<List<Messages>>).data
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color(0xFFF9F9F9))
+                                .padding(vertical = 8.dp)
+                        ) {
+                            items(user!!) { chat ->
+                                ChatListItemData(chat,navController)
+                            }
+                        }
+
+                    }
+                    is Response.Error ->{
+                        lodingScreen(false)
+                        Toast.makeText(navController.context,chatRoomLiveData.errorMessage.toString(),
+                            Toast.LENGTH_LONG).show()
+
                     }
                 }
 

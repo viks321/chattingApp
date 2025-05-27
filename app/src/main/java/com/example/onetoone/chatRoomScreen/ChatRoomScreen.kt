@@ -280,7 +280,7 @@ fun ChatHeader(navController: NavController, loginData: LoginModel?) {
                 modifier = Modifier
                     .size(30.dp)
                     .align(alignment = Alignment.CenterVertically)
-                    .clickable { navController.navigate("homeScreen") }
+                    .clickable { navController.popBackStack() }
             )
             Spacer(modifier = Modifier.width(10.dp))
             Image(

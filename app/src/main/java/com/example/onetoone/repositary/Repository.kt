@@ -99,15 +99,18 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
             }
     }
 
-    private val _chatRoomDataMutableState = MutableStateFlow<List<Messages>?>(emptyList())
-    val chatRoomDataMutableState: StateFlow<List<Messages>?>
+    private val _chatRoomDataMutableState = MutableStateFlow<Response<List<Messages>?>>(Response.Loading(null))
+    val chatRoomDataMutableState: StateFlow<Response<List<Messages>?>>
         get() = _chatRoomDataMutableState
 
-    private val _allMemberMutableLiveData = MutableStateFlow<List<UserData>>(emptyList())
-    val allMemberMutableLiveData: StateFlow<List<UserData>>
+    private val _allMemberMutableLiveData = MutableStateFlow<Response<List<UserData>>>(Response.Loading(null))
+    val allMemberMutableLiveData: StateFlow<Response<List<UserData>>>
         get() = _allMemberMutableLiveData
 
     suspend fun getAllMemberFromFirebase(currentUserID: String){
+
+        _allMemberMutableLiveData.emit(Response.Loading(null))
+        _chatRoomDataMutableState.emit(Response.Loading(null))
 
         Log.d("FirebaseVikasdvjjbjvbsdhjbvjhsdabvjbdvj", "Call vikas")
 
@@ -132,7 +135,7 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                         }
 
                         CoroutineScope(Dispatchers.IO).launch {
-                            _chatRoomDataMutableState.emit(chatRoomList)
+                            _chatRoomDataMutableState.emit(Response.Success(chatRoomList))
                         }
 
                         Log.d("FirebaseRoom", "Data: ${chatRoomList.toString()}")
@@ -143,40 +146,48 @@ class Repository @Inject constructor(val context: Context,val auth: FirebaseAuth
                 }
             }
 
-            /*for (value in userList){
-                run {
-                    if (value.userID.equals(currentUserID)) {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            userDataPref.saveUsername(value.userName.toString())
-                        }
-                    }
-                }
-            }*/
-
             for (userSnapshot in snapsort.result.children) {
                 val user = userSnapshot.getValue(UserData::class.java)
-                val messages = userSnapshot.getValue(Messages::class.java)
                 val roomsMap = user?.rooms
-                val userList = messages
 
                 // If user has no rooms or rooms does NOT contain the roomIdToExclude
                 if (roomsMap?.containsKey(currentUserID) == false || roomsMap == null) {
                     user?.let { userDataNEW.add(it) }
                 }
+
+                if (user?.userID.equals(currentUserID)) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userDataPref.saveUserId(user?.userID.toString())
+                        userDataPref.saveUsername(user?.userName.toString())
+                        userDataPref.saveUserEmail(user?.email.toString())
+                        userDataPref.saveUserPhone(user?.phoneNo.toString())
+                        userDataPref.saveUserPassword(user?.password.toString())
+                    }
+                }
             }
 
-            if(!userDataNEW.isEmpty()){
+            CoroutineScope(Dispatchers.IO).launch {
+                userDataNEW.removeAll { it.userID == currentUserID }
+                _allMemberMutableLiveData.emit(Response.Success(userDataNEW))
+            }
+
+            /*if(!userDataNEW.isEmpty()){
                 CoroutineScope(Dispatchers.IO).launch {
                     userDataNEW.removeAll { it.userID == currentUserID }
                     _allMemberMutableLiveData.emit(userDataNEW)
                 }
-                Log.d("FirebaseVikasYESRoom", "Users: ${userDataNEW}")
+                //Log.d("FirebaseVikasYESRoom", "Users: ${userDataNEW}")
 
-            }
+            }*/
 
         }
 
         .addOnFailureListener {
+
+            CoroutineScope(Dispatchers.IO).launch {
+                _allMemberMutableLiveData.emit(Response.Error(it.message.toString()))
+                _chatRoomDataMutableState.emit(Response.Error(it.message.toString()))
+            }
                 Log.e("Firebase", "Failed to read", it)
         }
     }

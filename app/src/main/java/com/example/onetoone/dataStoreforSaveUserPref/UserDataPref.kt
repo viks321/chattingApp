@@ -17,7 +17,8 @@ object UserPreferenceKeys{
     val USER_ID = stringPreferencesKey("user_id")
     val USER_NAME = stringPreferencesKey("user_name")
     val USER_EMAIL = stringPreferencesKey("user_email")
-    val USER_PHONE = stringPreferencesKey("user_password")
+    val USER_PHONE = stringPreferencesKey("user_phone")
+    val USER_PASSWORD = stringPreferencesKey("user_password")
 }
 
 class UserDataPref @Inject constructor(private val context: Context) {
@@ -36,11 +37,15 @@ class UserDataPref @Inject constructor(private val context: Context) {
         }
     val userEmailFlow: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferenceKeys.USER_EMAIL]
+            preferences[UserPreferenceKeys.USER_EMAIL] ?: "default"
         }
     val userPhoneFlow: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferenceKeys.USER_PHONE]
+            preferences[UserPreferenceKeys.USER_PHONE] ?: "default"
+        }
+    val userPasswordFlow: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferenceKeys.USER_PASSWORD] ?: "default"
         }
 
 
@@ -67,6 +72,11 @@ class UserDataPref @Inject constructor(private val context: Context) {
     suspend fun saveUserPhone(userPhone: String) {
         context.dataStore.edit { preferences ->
             preferences[UserPreferenceKeys.USER_PHONE] = userPhone
+        }
+    }
+    suspend fun saveUserPassword(userPassword: String) {
+        context.dataStore.edit { preferences ->
+            preferences[UserPreferenceKeys.USER_PASSWORD] = userPassword
         }
     }
 

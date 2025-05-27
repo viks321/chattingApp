@@ -129,7 +129,7 @@ fun registrationScreen(navController: NavController, loginModel: LoginModel?){
 
         //Loding Screen
         if (registrationViewmodel.isLoding){
-            lodingScreen()
+            lodingScreen(true)
         }
         if(registrationViewmodel.isLoadingData)
         {

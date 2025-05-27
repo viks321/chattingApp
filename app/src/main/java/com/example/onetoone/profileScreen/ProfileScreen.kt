@@ -43,7 +43,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
-
+import com.example.onetoone.models.LoginModel
 
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -58,6 +58,7 @@ fun preScreen(){
 fun ProfileScreen(navController: NavController) {
 
     val profileViewmodel : ProfileViewmodel = hiltViewModel()
+    val profileData: State<LoginModel> = profileViewmodel.profileData.collectAsState()
 
     Column(
         modifier = Modifier
@@ -83,7 +84,7 @@ fun ProfileScreen(navController: NavController) {
 
         // Name
         Text(
-            text = "Vikas Assudani",
+            text = profileData.value.userName.toString(),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF9333EA)
@@ -91,7 +92,7 @@ fun ProfileScreen(navController: NavController) {
 
         // Job Title
         Text(
-            text = "Android Developer",
+            text = profileData.value.userName.toString(),
             fontSize = 16.sp,
             color = Color.Gray
         )
@@ -99,10 +100,10 @@ fun ProfileScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(32.dp))
 
         // Info Fields
-        ProfileField(label = "Your Email", value = "vikasassudani909@gmail.com", icon = Icons.Default.Email)
-        ProfileField(label = "Phone Number", value = "+91 9876543210", icon = Icons.Default.Phone)
-        ProfileField(label = "Your ID", value = "9897ggiygsi878wgiwbfigweigiywig", icon = Icons.Default.Email)
-        ProfileField(label = "Password", value = "************", icon = Icons.Default.Lock)
+        ProfileField(label = "Your Email", value = profileData.value.email.toString(), icon = Icons.Default.Email)
+        ProfileField(label = "Phone Number", value = profileData.value.phoneNo.toString(), icon = Icons.Default.Phone)
+        ProfileField(label = "Your ID", value = profileData.value.userID.toString(), icon = Icons.Default.Email)
+        ProfileField(label = "Password", value = profileData.value.password.toString(), icon = Icons.Default.Lock)
 
         Button(
             onClick = {
