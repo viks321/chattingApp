@@ -167,7 +167,7 @@ fun chatRoomScreen(navController: NavController) {
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                ChatInputBar(roomDataMessages,loginData,chatRoomViewmodel,senderID.value,senderName)
+                ChatInputBar(roomDataMessages,loginData,chatRoomViewmodel,senderID.value,senderName,navController)
 
                 /*Box(
                     modifier = Modifier
@@ -360,7 +360,8 @@ fun ChatInputBar(
     loginData: LoginModel?,
     chatRoomViewmodel: ChatRoomViewmodel,
     senderID: String,
-    senderName: State<String>
+    senderName: State<String>,
+    navController: NavController
 ) {
     val state = remember { mutableStateOf("") }
 
@@ -413,14 +414,19 @@ fun ChatInputBar(
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.clickable {
-                        chatRoomViewmodel.createChatRoom(
-                            ChatRoom(state.value),
-                            loginData?.userID!!,
-                            senderID,
-                            senderName.value,
-                            loginData.userName!!
-                        )
-                        state.value = ""
+                        if(!state.value.isBlank()){
+                            chatRoomViewmodel.createChatRoom(
+                                ChatRoom(state.value),
+                                loginData?.userID!!,
+                                senderID,
+                                senderName.value,
+                                loginData.userName!!
+                            )
+                            state.value = ""
+                        }
+                        else{
+                            Toast.makeText(navController.context,"Please message type",Toast.LENGTH_LONG).show()
+                        }
                     }
                 )
             }

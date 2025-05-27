@@ -108,7 +108,7 @@ fun ProfileScreen(navController: NavController) {
         Button(
             onClick = {
                 profileViewmodel.logout()
-                navController.navigate("loginScreen") {
+                navController.navigate("landingScreen") {
                     popUpTo(0) { inclusive = true } // removes all backstack
                     launchSingleTop = true
                 }

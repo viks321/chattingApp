@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.onetoone.chatRoomScreen.chatRoomScreen
 import com.example.onetoone.homeScreen.homeScreen
+import com.example.onetoone.landingScreen.landingScreen
 import com.example.onetoone.models.LoginModel
 import com.example.onetoone.loginScreen.LoginViewmodel
 import com.example.onetoone.loginScreen.loginScreen
@@ -48,8 +49,20 @@ class FirstActivity : ComponentActivity() {
 @Composable
 fun App() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "loginScreen") {
+    NavHost(navController = navController, startDestination = "landingScreen") {
 
+        composable(route = "landingScreen") {
+
+            landingScreen(navController)
+        }
+
+        composable(route = "loginScreen") {
+
+            loginScreen(onClick = { loginData ->
+                navController.currentBackStackEntry?.savedStateHandle?.set("loginData", loginData)
+                navController.navigate("registrationScreen")
+            },navController)
+        }
         //Login screen
         composable(route = "loginScreen") {
 
