@@ -78,6 +78,8 @@ fun chatRoomScreen(navController: NavController) {
 
         //Toast.makeText(navController.context,loginData?.userID.toString(),Toast.LENGTH_LONG).show()
     LaunchedEffect(Unit) {
+        //Toast.makeText(navController.context,senderID.value.toString(),Toast.LENGTH_LONG).show()
+        chatRoomViewmodel.updateMessageCount(senderID.value.toString(),loginData?.userID.toString())
         chatRoomViewmodel.getMessageData(senderID.value,loginData?.userID.toString())
     }
 

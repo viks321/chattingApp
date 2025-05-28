@@ -10,6 +10,7 @@ import com.example.onetoone.models.Messages
 import com.example.onetoone.models.UserData
 import com.example.onetoone.repositary.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -47,14 +48,20 @@ class ChatRoomViewmodel @Inject constructor(val repository: Repository,val userD
     }
 
     fun createChatRoom(chatRoom: ChatRoom,receiverID: String,sender: String,senderName:String,receiverName:String){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO){
             repository.createChatRoomFirebase(receiverID,sender,chatRoom,senderName,receiverName)
         }
     }
 
     fun getMessageData (sendID: String,roomID: String){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getMessagesFromFirebase(sendID,roomID)
+        }
+    }
+
+    fun updateMessageCount(currentuserID: String, roomID: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateMessageCountONFirebase(currentuserID,roomID)
         }
     }
 }

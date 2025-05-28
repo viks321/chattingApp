@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -33,9 +34,10 @@ fun landingScreen(navController: NavController) {
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize().background(Color(0xFF2A2A95))
+        modifier = Modifier.fillMaxSize(),
     ) {
-        Image(painter = painterResource(id = R.drawable.onevone_logo), contentDescription = "splash")
+        Image(painter = painterResource(id = R.drawable.splash), contentDescription = "splash", modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop)
 
         LaunchedEffect(Unit) {
             CoroutineScope(Dispatchers.Main).launch {

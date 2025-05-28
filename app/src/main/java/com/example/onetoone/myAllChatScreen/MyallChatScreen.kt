@@ -221,6 +221,7 @@ fun ChatListItemData(chat: Messages, navController: NavController) {
                 navController.currentBackStackEntry
                     ?.savedStateHandle
                     ?.set("loginData", loginData)
+                //Toast.makeText(navController.context,chat.userID.toString(),Toast.LENGTH_LONG).show()
                 navController.navigate("chatRoomScreen")
             }
             .padding(horizontal = 16.dp, vertical = 10.dp),
